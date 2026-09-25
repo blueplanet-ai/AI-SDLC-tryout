@@ -1,8 +1,58 @@
 // Starts the app and shows one screen at a time, chosen by the address bar
 // (e.g. "#/live"), so the Back button works and a reload keeps the screen.
 
+import { createStore, StoreError } from './store.js';
+import { createRepo } from './repo.js';
+import { ModelError } from './model.js';
+import * as studiesView from './views/studies.js';
+import * as setupView from './views/setup.js';
+
 const SCREENS = ['studies', 'setup', 'live', 'review', 'summary'];
 const DEFAULT_SCREEN = 'studies';
+const VIEWS = { studies: studiesView, setup: setupView };
+
+let keepStatus = false;
+const appError = document.getElementById('app-error');
+const status = document.getElementById('status');
+
+function showAppError(message) {
+  appError.textContent = message;
+  appError.hidden = false;
+}
+
+function showStoreError(err) {
+  if (!(err instanceof StoreError)) throw err;
+  showAppError(`Could not read or save data in this browser: ${err.message}`);
+}
+
+const ctx = {
+  repo: createRepo(createStore()),
+
+  // Runs `action`; a broken rule is shown in `errorBox`, a storage problem at the top.
+  run(errorBox, action) {
+    errorBox.textContent = '';
+    try {
+      action();
+    } catch (err) {
+      if (err instanceof ModelError) errorBox.textContent = err.message;
+      else showStoreError(err);
+    }
+  },
+
+  // Short confirmation such as "Screen added." (also read out by screen readers).
+  announce(message) {
+    status.textContent = message;
+  },
+
+  showStoreError,
+
+  // Switch screen from code; a message just announced stays visible.
+  go(name) {
+    keepStatus = true;
+    if (location.hash === `#/${name}`) show(name, { moveFocus: true });
+    else location.hash = `#/${name}`;
+  },
+};
 
 function screenFromHash(hash) {
   const name = hash.startsWith('#/') ? hash.slice(2) : '';
@@ -10,6 +60,8 @@ function screenFromHash(hash) {
 }
 
 function show(name, { moveFocus }) {
+  if (!keepStatus) status.textContent = '';
+  keepStatus = false;
   for (const section of document.querySelectorAll('[data-screen]')) {
     section.hidden = section.dataset.screen !== name;
   }
@@ -20,6 +72,12 @@ function show(name, { moveFocus }) {
       link.removeAttribute('aria-current');
     }
   }
+  // Only the visible screen has content, so hidden forms never clash with it.
+  for (const body of document.querySelectorAll('[data-body]')) {
+    if (body.dataset.body !== name) body.replaceChildren();
+  }
+  const view = VIEWS[name];
+  if (view) view.render(document.querySelector(`[data-body="${name}"]`), ctx);
   const heading = document.getElementById(`h-${name}`);
   document.title = `${heading.textContent} – Test-session notes`;
   // Tell screen-reader and keyboard users where they landed.

@@ -79,3 +79,87 @@ main {
 h1:focus { outline: none; }
 
 .placeholder { color: var(--muted); }
+
+/* ---------- Shared pieces (step 4) ---------- */
+:root {
+  --error: #b3261e;
+  --warning-bg: #fff4e5;
+  --warning-text: #6b3a00;
+  --ok: #146c2e;
+  --primary: #0b57d0;
+  --primary-text: #ffffff;
+}
+
+h2 { margin: 32px 0 12px; font-size: 1.2rem; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+input[type="text"], select {
+  font: inherit;
+  padding: 6px 8px;
+  border: 1px solid #767676;
+  border-radius: 4px;
+  min-width: 18rem;
+}
+
+button {
+  font: inherit;
+  padding: 6px 12px;
+  border: 1px solid #767676;
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+}
+button:hover:not(:disabled) { background: var(--header-bg); }
+button:disabled { color: var(--muted); border-color: var(--border); cursor: not-allowed; }
+button.primary { background: var(--primary); color: var(--primary-text); border-color: var(--primary); }
+button.primary:hover:not(:disabled) { background: #0842a0; }
+button.primary:disabled { background: var(--header-bg); color: var(--muted); border-color: var(--border); }
+
+.stack { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.inline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0; }
+
+.error { color: var(--error); font-weight: 600; margin: 4px 0; }
+.error:empty { display: none; }
+.banner { padding: 8px 12px; border: 2px solid var(--error); border-radius: 4px; }
+.warning {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  padding: 8px 12px;
+  border-radius: 4px;
+}
+.hint { color: var(--muted); }
+.status { color: var(--ok); min-height: 1.5em; margin: 0 0 8px; }
+.empty { color: var(--muted); }
+.context { color: var(--muted); margin-top: -8px; }
+.badge { color: var(--muted); font-weight: normal; }
+
+.studies-table { border-collapse: collapse; width: 100%; }
+.studies-table th, .studies-table td {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.studies-table thead th { color: var(--muted); font-weight: 600; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.screen-list { padding: 0; list-style: none; margin: 0 0 8px; max-width: 48rem; }
+.screen-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.screen-list .inline { margin: 0; }
