@@ -1,0 +1,11 @@
+# Exported studies may contain real test notes — never commit them
+*.study.json
+!tests/fixtures/*.study.json
+
+# Test tools and output
+node_modules/
+test-results/
+playwright-report/
+
+# OS
+.DS_Store

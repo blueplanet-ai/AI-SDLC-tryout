@@ -23,6 +23,44 @@ The project focuses on understanding and applying AI-assisted practices in softw
 - Practice disciplined engineering habits alongside AI tooling
 - Build a reusable foundation for future AI-enabled projects
 
+## The app: test-session notes
+
+A small web app for a note-taker to log observations live during prototype
+test sessions, then produce a summary grouped by screen for the team.
+
+- **Use it:** https://blueplanet-ai.github.io/AI-SDLC-tryout/ *(live once v1 is published)*
+- No sign-in, no server, no analytics. Your notes stay in this laptop's
+  browser unless you export or copy them.
+- Participants are identified only by anonymous IDs (P1, P2, ...). Please
+  don't type names or personal details into notes.
+
+### Keep your data safe
+Notes are saved in the browser. Clearing browser data, switching browsers, or
+(in Safari) not opening the app for 7 days can erase them. Use **Export study**
+after each session and keep the file somewhere safe. Supported browsers:
+current Chrome, Edge, and Firefox. Safari works, but only with regular exports
+because of its 7-day rule.
+
+### Keyboard shortcuts (live log)
+| Keys | Action |
+|------|--------|
+| Alt+1 … Alt+9 | Pick screen 1–9 |
+| Alt+S | Search any screen |
+| Alt+T | Toggle pain point / positive moment |
+| Enter | Save finding |
+| Shift+Enter | New line in the note |
+
+### Run locally
+```bash
+python3 -m http.server 8000 --directory app
+```
+Then open http://localhost:8000. See [CLAUDE.md](CLAUDE.md) for tests.
+
+### Project documents
+- [intent/intent.md](intent/intent.md) — the problem and goal
+- [intent/spec.md](intent/spec.md) — the approved requirements
+- [intent/plan.md](intent/plan.md) — the implementation plan and clarifications
+
 ## Repository Structure
 
 This repository is intentionally lightweight and will grow as the project evolves. A typical structure may include:
