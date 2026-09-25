@@ -13,6 +13,7 @@ sentence, and flag unclear requirements instead of deciding silently.
 - Run the app locally: `python3 -m http.server 8000 --directory app` → http://localhost:8000
 - Unit tests in a browser: `python3 -m http.server 8000` → http://localhost:8000/tests/unit/
 - All tests (needs Node 20+): `npm ci && npx playwright install --with-deps chromium && npm test`
+- Build a plan step: /plan-step <number>
 - CI (`.github/workflows/pages.yml`) runs all tests on every pull request
   (no deploy) and on push to `main`, then deploys only `app/` to GitHub Pages
   if they pass.
