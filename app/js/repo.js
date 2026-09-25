@@ -6,6 +6,7 @@ import { StoreError } from './store.js';
 
 const STUDY_PREFIX = 'study:';
 const CURRENT_KEY = 'currentStudyId';
+const DRAFT_KEY = 'draft';
 
 export function createRepo(store) {
   // Returns { studies, damaged }: studies newest first, and the keys that could not be read.
@@ -63,7 +64,28 @@ export function createRepo(store) {
     else store.save(CURRENT_KEY, id);
   }
 
+  // The note being typed in the Live log, so closing the tab mid-note loses nothing.
+  // Kept for one session only: { sessionId, note, screenId, type }.
+  function loadDraft(sessionId) {
+    try {
+      const draft = store.load(DRAFT_KEY);
+      return draft && draft.sessionId === sessionId ? draft : null;
+    } catch (err) {
+      if (err instanceof StoreError) return null;
+      throw err;
+    }
+  }
+
+  function saveDraft(draft) {
+    store.save(DRAFT_KEY, draft);
+  }
+
+  function clearDraft() {
+    store.remove(DRAFT_KEY);
+  }
+
   return {
     listStudies, loadStudy, saveStudy, deleteStudy, currentStudyId, currentStudy, setCurrentStudyId,
+    loadDraft, saveDraft, clearDraft,
   };
 }
