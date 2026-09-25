@@ -4,7 +4,7 @@
 import { el, replaceChildren } from './dom.js';
 import {
   updateStudyDetails, addScreen, renameScreen, moveScreen, removeScreen,
-  canStartSession, PROTOTYPE_TYPES, PROTOTYPE_TYPE_LABELS,
+  canStartSession, activeSession, PROTOTYPE_TYPES, PROTOTYPE_TYPE_LABELS,
 } from '../model.js';
 
 // Which screen is being renamed; survives a re-render but not a page reload.
@@ -125,7 +125,8 @@ export function render(container, ctx, { focus } = {}) {
   }
 
   // ----- Session -----
-  const start = canStartSession(study);
+  const start = canStartSession(study, repo.listStudies().studies);
+  const running = activeSession(study);
 
   replaceChildren(container,
     el('p', { class: 'context' }, `Round ${study.round}`),
@@ -148,12 +149,20 @@ export function render(container, ctx, { focus } = {}) {
     screensError,
 
     el('h2', {}, 'Session'),
-    el('p', { id: 'start-help', class: start.ok ? 'hint' : 'warning' },
-      start.ok ? 'Ready. Screens can also be added during the session.' : start.message),
-    el('button', {
-      type: 'button', id: 'start-session', class: 'primary', disabled: !start.ok,
-      'aria-describedby': 'start-help', onclick: () => ctx.go('live'),
-    }, 'Start session'));
+    running
+      ? [
+        el('p', { id: 'start-help', class: 'hint' }, `Session ${running.participantId} is running.`),
+        el('button', { type: 'button', id: 'continue-session', class: 'primary', onclick: () => ctx.go('live') },
+          'Continue in Live log'),
+      ]
+      : [
+        el('p', { id: 'start-help', class: start.ok ? 'hint' : 'warning' },
+          start.ok ? 'Ready. Screens can also be added during the session.' : start.message),
+        el('button', {
+          type: 'button', id: 'start-session', class: 'primary', disabled: !start.ok,
+          'aria-describedby': 'start-help', onclick: () => ctx.go('live'),
+        }, 'Start session'),
+      ]);
 
   if (focus) container.querySelector(focus)?.focus();
 }

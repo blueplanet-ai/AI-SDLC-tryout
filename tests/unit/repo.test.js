@@ -94,3 +94,26 @@ test('FR1: deleting another study keeps the open one open (D23)', () => {
   repo.deleteStudy('b');
   assertEqual(repo.currentStudyId(), 'a');
 });
+
+test('FR3: the unsaved note draft is kept for its session only', () => {
+  const { repo, backend } = setup();
+  const draft = { sessionId: 's1', note: 'half-typed 3 words', screenId: 'scr', type: 'pain' };
+  repo.saveDraft(draft);
+  assertEqual(backend.getItem('tsn:draft') !== null, true);
+  assertEqual(repo.loadDraft('s1'), draft);
+  assertEqual(repo.loadDraft('s2'), null);
+  repo.clearDraft();
+  assertEqual(repo.loadDraft('s1'), null);
+});
+
+test('FR3: a damaged draft is ignored, not an error', () => {
+  const { repo, backend } = setup();
+  backend.setItem('tsn:draft', '{broken');
+  assertEqual(repo.loadDraft('s1'), null);
+});
+
+test('FR3: the draft is not listed as a study', () => {
+  const { repo } = setup();
+  repo.saveDraft({ sessionId: 's1', note: 'x', screenId: 'scr', type: 'pain' });
+  assertEqual(repo.listStudies(), { studies: [], damaged: [] });
+});

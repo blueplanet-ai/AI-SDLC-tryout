@@ -180,3 +180,81 @@ dialog.confirm {
 dialog.confirm::backdrop { background: rgb(0 0 0 / 40%); }
 dialog.confirm h2 { margin-top: 0; }
 dialog.confirm .actions { margin-top: 16px; }
+
+/* ---------- Live log (step 5) ---------- */
+:root {
+  --pain: #b3261e;
+  --pain-bg: #fdecea;
+  --positive: #146c2e;
+  --positive-bg: #e6f4ea;
+  --selected-bg: #0b57d0;
+}
+
+.live-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  background: var(--header-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+.live-bar p { margin: 0; }
+.live-bar #end-session { margin-left: auto; }
+#timer { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+.live-pickers { display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: flex-start; }
+.picker-label { margin: 0 0 4px; font-weight: 600; }
+.picker-label .hint, label .hint { font-weight: normal; }
+.live-pickers .field p { margin: 0; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; max-width: 40rem; }
+button.chip, button.type-btn { border-radius: 16px; }
+button.chip[aria-pressed="true"], button.type-btn[aria-pressed="true"] {
+  background: var(--selected-bg);
+  color: #ffffff;
+  border-color: var(--selected-bg);
+  font-weight: 600;
+}
+button.chip[aria-pressed="true"]:hover, button.type-btn[aria-pressed="true"]:hover { background: #0842a0; }
+.chip-num {
+  display: inline-block;
+  min-width: 1.2em;
+  margin-right: 4px;
+  font-weight: 600;
+}
+
+.note-area { margin-top: 20px; display: flex; flex-direction: column; gap: 4px; max-width: 48rem; }
+.note-area label { font-weight: 600; }
+.note-area p { margin: 0; }
+.note-area button { align-self: flex-start; margin-top: 4px; }
+.selection { color: var(--muted); }
+textarea {
+  font: inherit;
+  padding: 8px;
+  border: 1px solid #767676;
+  border-radius: 4px;
+  width: 100%;
+  resize: vertical;
+}
+#note { font-size: 1.1rem; min-height: 5em; }
+
+.backup-offer {
+  padding: 12px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+.backup-offer p { margin: 0 0 8px; }
+
+.feed-list { list-style: none; padding: 0; margin: 0; max-width: 48rem; }
+.feed-list li { padding: 8px 0; border-bottom: 1px solid var(--border); }
+.feed-list p { margin: 0 0 4px; }
+.feed-meta { color: var(--muted); font-size: 0.9rem; }
+.feed-note { white-space: pre-wrap; overflow-wrap: anywhere; }
+.feed-list .actions { margin-top: 4px; }
+.type-tag { font-weight: 600; padding: 0 6px; border-radius: 4px; }
+.type-tag.pain { color: var(--pain); background: var(--pain-bg); }
+.type-tag.positive { color: var(--positive); background: var(--positive-bg); }

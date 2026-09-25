@@ -227,12 +227,20 @@ export function findActiveSession(studies) {
 }
 
 // FR1 acceptance: a session needs at least one screen.
-export function canStartSession(study) {
+// D12: pass all studies to also refuse while another study has a session running.
+export function canStartSession(study, allStudies = []) {
   if (study.screens.length === 0) {
     return { ok: false, message: 'Add at least one screen before starting a session.' };
   }
   if (activeSession(study)) {
     return { ok: false, message: 'End the current session before starting a new one.' };
+  }
+  const elsewhere = findActiveSession(allStudies.filter((s) => s.id !== study.id));
+  if (elsewhere) {
+    return {
+      ok: false,
+      message: `A session is running in "${elsewhere.study.name}" (round ${elsewhere.study.round}). End it first.`,
+    };
   }
   return { ok: true };
 }

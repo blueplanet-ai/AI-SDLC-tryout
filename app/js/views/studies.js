@@ -2,12 +2,11 @@
 // round, delete a study (with confirmation and a backup offer, D23).
 
 import { el, replaceChildren } from './dom.js';
-import { downloadText } from './download.js';
+import { exportStudy } from './export.js';
 import {
-  createStudy, copyStudyForNextRound, canDeleteStudy, markExported,
+  createStudy, copyStudyForNextRound, canDeleteStudy, findActiveSession,
   PROTOTYPE_TYPES, PROTOTYPE_TYPE_LABELS,
 } from '../model.js';
-import { toExportText, exportFileName } from '../backup.js';
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
@@ -66,10 +65,7 @@ export function render(container, ctx) {
 
     function exportBackup() {
       ctx.run(dialogError, () => {
-        const exported = markExported(study);
-        repo.saveStudy(exported);
-        const fileName = exportFileName(exported);
-        downloadText(fileName, toExportText(exported, exported.lastExportedAt));
+        const fileName = exportStudy(repo, study);
         backupStatus.textContent = `Backup saved as ${fileName} in your Downloads folder.`;
       });
     }
@@ -137,7 +133,15 @@ export function render(container, ctx) {
             'aria-label': `Delete ${study.name}, round ${study.round}`,
           }, 'Delete'))))));
 
+  // D12: a running session resumes after the browser is reopened.
+  const running = findActiveSession(studies);
+
   replaceChildren(container,
+    running
+      ? el('p', { id: 'running-session', class: 'warning' },
+        `Session ${running.session.participantId} is running in "${running.study.name}" (round ${running.study.round}). `,
+        el('a', { href: '#/live' }, 'Continue in Live log'))
+      : null,
     el('h2', {}, 'Create a study'),
     el('form', { class: 'stack', onsubmit: onCreate, novalidate: true },
       el('div', { class: 'field' }, el('label', { for: 'new-study-name' }, 'Study name'), nameInput),

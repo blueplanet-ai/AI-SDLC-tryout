@@ -240,6 +240,16 @@ test('FR2: only one session can run at a time (D12)', () => {
   assertModelError(() => m.startSession(study, 'P2', env), 'cannot-start');
 });
 
+test('FR2: a session cannot start while another study has one running (D12)', () => {
+  const env = testEnv();
+  const idle = sampleStudy(env);
+  const busy = withSession(env, 'P3');
+  const result = m.canStartSession(idle, [idle, busy]);
+  assertEqual(result.ok, false);
+  assertEqual(result.message, 'A session is running in "SAMPLE study" (round 1). End it first.');
+  assertEqual(m.canStartSession(idle, [idle]).ok, true);
+});
+
 test('FR2: finds the running session across all studies (D12)', () => {
   const env = testEnv();
   const idle = sampleStudy(env);

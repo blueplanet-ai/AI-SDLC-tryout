@@ -6,10 +6,11 @@ import { createRepo } from './repo.js';
 import { ModelError } from './model.js';
 import * as studiesView from './views/studies.js';
 import * as setupView from './views/setup.js';
+import * as liveView from './views/live.js';
 
 const SCREENS = ['studies', 'setup', 'live', 'review', 'summary'];
 const DEFAULT_SCREEN = 'studies';
-const VIEWS = { studies: studiesView, setup: setupView };
+const VIEWS = { studies: studiesView, setup: setupView, live: liveView };
 
 let keepStatus = false;
 const appError = document.getElementById('app-error');
@@ -77,11 +78,13 @@ function show(name, { moveFocus }) {
     if (body.dataset.body !== name) body.replaceChildren();
   }
   const view = VIEWS[name];
-  if (view) view.render(document.querySelector(`[data-body="${name}"]`), ctx);
+  // A screen may name the box to start in (e.g. the Live log note box).
+  const startIn = view ? view.render(document.querySelector(`[data-body="${name}"]`), ctx) : undefined;
   const heading = document.getElementById(`h-${name}`);
   document.title = `${heading.textContent} – Test-session notes`;
-  // Tell screen-reader and keyboard users where they landed.
-  if (moveFocus) heading.focus();
+  // Otherwise tell screen-reader and keyboard users where they landed.
+  if (startIn) startIn.focus();
+  else if (moveFocus) heading.focus();
 }
 
 function onHashChange() {
