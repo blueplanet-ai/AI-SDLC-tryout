@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- Security rule: the page may only load its own files and may not contact any server. -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; manifest-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Test-session notes</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="app-header">
+    <p class="app-name">Test-session notes</p>
+    <nav aria-label="Screens">
+      <ul>
+        <li><a href="#/studies">Studies</a></li>
+        <li><a href="#/setup">Study setup</a></li>
+        <li><a href="#/live">Live log</a></li>
+        <li><a href="#/review">Review</a></li>
+        <li><a href="#/summary">Summary</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section id="screen-studies" data-screen="studies" aria-labelledby="h-studies">
+      <h1 id="h-studies" tabindex="-1">Studies</h1>
+      <p class="placeholder">List of studies, create new, import. Coming in step 4.</p>
+    </section>
+
+    <section id="screen-setup" data-screen="setup" aria-labelledby="h-setup" hidden>
+      <h1 id="h-setup" tabindex="-1">Study setup</h1>
+      <p class="placeholder">Name, prototype type, screen list. Coming in step 4.</p>
+    </section>
+
+    <section id="screen-live" data-screen="live" aria-labelledby="h-live" hidden>
+      <h1 id="h-live" tabindex="-1">Live log</h1>
+      <p class="placeholder">Log findings during a session. Coming in step 5.</p>
+    </section>
+
+    <section id="screen-review" data-screen="review" aria-labelledby="h-review" hidden>
+      <h1 id="h-review" tabindex="-1">Review</h1>
+      <p class="placeholder">All findings with filters, edit and delete. Coming in step 6.</p>
+    </section>
+
+    <section id="screen-summary" data-screen="summary" aria-labelledby="h-summary" hidden>
+      <h1 id="h-summary" tabindex="-1">Summary</h1>
+      <p class="placeholder">Summary, copy, download, feedback received. Coming in steps 7 and 8.</p>
+    </section>
+  </main>
+</body>
+</html>
