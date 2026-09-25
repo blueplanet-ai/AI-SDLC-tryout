@@ -503,3 +503,17 @@ test('FR1: changes return a new study and never alter the old one', () => {
   m.startSession(study, 'P1', env);
   assertEqual(JSON.stringify(study), snapshot);
 });
+
+// ---------- D23: delete study ----------
+
+test('FR1: a study with a running session cannot be deleted (D23)', () => {
+  const result = m.canDeleteStudy(withSession(testEnv()));
+  assertEqual(result, { ok: false, message: 'End the running session before deleting this study.' });
+});
+
+test('FR1: a study can be deleted once its session has ended (D23)', () => {
+  const env = testEnv();
+  const { study, sessionId } = m.startSession(sampleStudy(env), 'P1', env);
+  assertEqual(m.canDeleteStudy(m.endSession(study, sessionId, env)), { ok: true });
+  assertEqual(m.canDeleteStudy(sampleStudy(testEnv())), { ok: true });
+});

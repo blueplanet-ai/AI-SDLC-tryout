@@ -43,6 +43,8 @@ sentence, and flag unclear requirements instead of deciding silently.
 - Import of an existing study asks: replace, or keep both.
 - One active session at a time; it resumes after the browser reopens.
 - Delete asks for confirmation; no undo in v1.
+- Delete study (D23): the confirm dialog offers "Export a backup first";
+  blocked while one of its sessions is running.
 - No tight timing tests in CI (machines vary); use generous limits (≥1 s).
 
 ## Conventions

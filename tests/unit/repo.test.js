@@ -74,3 +74,23 @@ test('FR7: a damaged open study is reported, not hidden', () => {
   repo.setCurrentStudyId('a');
   assertThrows(() => repo.currentStudy(), 'StoreError');
 });
+
+test('FR1: deleting a study removes it and closes it if it was open (D23)', () => {
+  const { repo, backend } = setup();
+  repo.saveStudy(study('a', '2026-09-24T10:00:00.000Z'));
+  repo.saveStudy(study('b', '2026-09-24T11:00:00.000Z'));
+  repo.setCurrentStudyId('a');
+  repo.deleteStudy('a');
+  assertEqual(backend.getItem('tsn:study:a'), null);
+  assertEqual(repo.currentStudyId(), null);
+  assertEqual(repo.listStudies().studies.map((s) => s.id), ['b']);
+});
+
+test('FR1: deleting another study keeps the open one open (D23)', () => {
+  const { repo } = setup();
+  repo.saveStudy(study('a', '2026-09-24T10:00:00.000Z'));
+  repo.saveStudy(study('b', '2026-09-24T11:00:00.000Z'));
+  repo.setCurrentStudyId('a');
+  repo.deleteStudy('b');
+  assertEqual(repo.currentStudyId(), 'a');
+});

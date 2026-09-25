@@ -57,10 +57,11 @@ test('an unknown address shows the Studies screen', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Studies');
 });
 
-test('makes no requests to other websites', async ({ page }) => {
+test('makes no requests to other websites', async ({ page, baseURL }) => {
   const outside = [];
+  const ownHost = new URL(baseURL).host;
   page.on('request', (req) => {
-    if (new URL(req.url()).host !== '127.0.0.1:8000') outside.push(req.url());
+    if (new URL(req.url()).host !== ownHost) outside.push(req.url());
   });
   await page.goto('/app/');
   for (const { heading } of SCREENS) {

@@ -99,6 +99,14 @@ export function updateStudyDetails(study, { name, prototypeType }) {
   };
 }
 
+// D23: a study cannot be deleted while one of its sessions is running.
+export function canDeleteStudy(study) {
+  if (activeSession(study)) {
+    return { ok: false, message: 'End the running session before deleting this study.' };
+  }
+  return { ok: true };
+}
+
 // D1: the next round keeps the name and screen list, nothing else.
 export function copyStudyForNextRound(study, env = defaultEnv) {
   return {
