@@ -29,14 +29,16 @@
   </header>
 
   <main id="main">
+    <p id="app-error" class="error banner" role="alert" hidden></p>
+    <p id="status" class="status" role="status" aria-live="polite"></p>
     <section id="screen-studies" data-screen="studies" aria-labelledby="h-studies">
       <h1 id="h-studies" tabindex="-1">Studies</h1>
-      <p class="placeholder">List of studies, create new, import. Coming in step 4.</p>
+      <div class="screen-body" data-body="studies"></div>
     </section>
 
     <section id="screen-setup" data-screen="setup" aria-labelledby="h-setup" hidden>
       <h1 id="h-setup" tabindex="-1">Study setup</h1>
-      <p class="placeholder">Name, prototype type, screen list. Coming in step 4.</p>
+      <div class="screen-body" data-body="setup"></div>
     </section>
 
     <section id="screen-live" data-screen="live" aria-labelledby="h-live" hidden>

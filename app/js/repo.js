@@ -1,0 +1,61 @@
+// Keeps studies in storage: one key per study ("tsn:study:<id>"), plus the
+// id of the study that is open. No screen code here.
+// One key per study means a damaged entry cannot take the other studies with it.
+
+import { StoreError } from './store.js';
+
+const STUDY_PREFIX = 'study:';
+const CURRENT_KEY = 'currentStudyId';
+
+export function createRepo(store) {
+  // Returns { studies, damaged }: studies newest first, and the keys that could not be read.
+  function listStudies() {
+    const studies = [];
+    const damaged = [];
+    for (const key of store.keys()) {
+      if (!key.startsWith(STUDY_PREFIX)) continue;
+      try {
+        const study = store.load(key);
+        if (study && typeof study === 'object' && typeof study.id === 'string') studies.push(study);
+        else damaged.push(key);
+      } catch (err) {
+        if (!(err instanceof StoreError)) throw err;
+        damaged.push(key);
+      }
+    }
+    studies.sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0));
+    return { studies, damaged };
+  }
+
+  function loadStudy(id) {
+    return store.load(STUDY_PREFIX + id);
+  }
+
+  function saveStudy(study) {
+    store.save(STUDY_PREFIX + study.id, study);
+  }
+
+  function currentStudyId() {
+    try {
+      const id = store.load(CURRENT_KEY);
+      return typeof id === 'string' ? id : null;
+    } catch (err) {
+      if (err instanceof StoreError) return null;
+      throw err;
+    }
+  }
+
+  // The open study, or null if none is chosen or it no longer exists.
+  function currentStudy() {
+    const id = currentStudyId();
+    if (id === null) return null;
+    return loadStudy(id) ?? null;
+  }
+
+  function setCurrentStudyId(id) {
+    if (id === null) store.remove(CURRENT_KEY);
+    else store.save(CURRENT_KEY, id);
+  }
+
+  return { listStudies, loadStudy, saveStudy, currentStudyId, currentStudy, setCurrentStudyId };
+}
