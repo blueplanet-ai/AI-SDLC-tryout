@@ -74,5 +74,22 @@ End with a short report:
 - The pull request link and whether its checks passed.
 - A table of "Try this → Expected result" for the by-hand review.
 - Anything you flagged or could not decide.
+- At the very end of the report, exactly one of:
+  - `Open questions: none — ready to merge.`
+  - `Open questions: <number> — do not merge yet.` followed by a numbered
+    list of the questions.
 
-Then stop and wait. Do not start the next step.
+Also add the same "Open questions" line to the end of the pull request
+description, so it is visible on GitHub.
+
+When the owner answers:
+
+- Apply every answer as a new commit on the same branch. Record each
+  decision in section 8 of `intent/plan.md` and remove any "open for owner
+  review" marker.
+- Push, wait for the checks again, and repeat the full report.
+- Update the "Open questions" line in the pull request description.
+- Say "none" only when every question is answered and every answer is
+  pushed to the pull request.
+
+Then stop and wait. Do not merge, and do not start the next step.
