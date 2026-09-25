@@ -241,14 +241,6 @@ textarea {
 }
 #note { font-size: 1.1rem; min-height: 5em; }
 
-.backup-offer {
-  padding: 12px;
-  margin-bottom: 16px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-}
-.backup-offer p { margin: 0 0 8px; }
-
 .feed-list { list-style: none; padding: 0; margin: 0; max-width: 48rem; }
 .feed-list li { padding: 8px 0; border-bottom: 1px solid var(--border); }
 .feed-list p { margin: 0 0 4px; }

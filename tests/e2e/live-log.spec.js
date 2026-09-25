@@ -57,6 +57,13 @@ async function savedStudy(page, name) {
   return { ...study, readable };
 }
 
+// Ends the running session through the confirmation dialog, without a backup.
+async function endSessionNow(page) {
+  await page.getByRole('button', { name: 'End session' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'End', exact: true }).click();
+  await expect(page.getByLabel('Participant ID')).toBeFocused();
+}
+
 const chip = (page, name) => page.locator('.chip', { hasText: name });
 const feedItems = (page) => page.locator('.feed-list li');
 
@@ -74,7 +81,7 @@ test('FR2: the second session pre-fills P2', async ({ page }) => {
   await createStudy(page);
   await startSession(page);
   await expect(page.locator('#current-participant')).toHaveText('P1');
-  await page.getByRole('button', { name: 'End session' }).click();
+  await endSessionNow(page);
   await expect(page.getByLabel('Participant ID')).toHaveValue('P2');
   await page.getByLabel('Participant ID').press('Enter');
   await expect(page.locator('#current-participant')).toHaveText('P2');
@@ -103,7 +110,7 @@ test('FR2: p3 is accepted and stored as P3', async ({ page }) => {
 test('FR2: a participant ID used before shows a warning but can still start (D5)', async ({ page }) => {
   await createStudy(page);
   await startSession(page);
-  await page.getByRole('button', { name: 'End session' }).click();
+  await endSessionNow(page);
   await expect(page.locator('#participant-warning')).toBeHidden();
   await page.getByLabel('Participant ID').fill('p1');
   await expect(page.locator('#participant-warning')).toHaveText('P1 was already used in this study. You can still start.');
@@ -119,23 +126,66 @@ test('FR1: the Live log cannot start a session in a study without screens', asyn
   await expect(page.getByRole('button', { name: 'Start session' })).toBeDisabled();
 });
 
-test('FR2: End session records the end time and offers a backup (D13, D17)', async ({ page }) => {
+test('FR2: End session asks for confirmation; Cancel and Escape keep the session running (D24)', async ({ page }) => {
+  await createStudy(page);
+  await startSession(page, 'P7');
+  await page.getByRole('button', { name: 'End session' }).click();
+  const dialog = page.getByRole('dialog', { name: 'End session for P7?' });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('button')).toHaveText(['End and export backup', 'End', 'Cancel']);
+  await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeFocused();
+  await dialog.getByRole('button', { name: 'Cancel' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'End session' })).toBeFocused();
+  // Escape also cancels.
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.locator('#current-participant')).toHaveText('P7');
+  expect((await savedStudy(page)).sessions[0].endedAt).toBeNull();
+});
+
+test('FR2: shortcuts do nothing while the End session dialog is open (D24)', async ({ page }) => {
+  await createStudy(page);
+  await startSession(page);
+  await page.getByRole('button', { name: 'End session' }).click();
+  await page.keyboard.press('Alt+Digit2');
+  await expect(page.getByRole('dialog').getByRole('button', { name: 'Cancel' })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(chip(page, 'Home')).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('FR2: "End" records the end time without a backup (D13, D24)', async ({ page }) => {
+  await createStudy(page, 'SAMPLE end');
+  await startSession(page);
+  await logNote(page, 'One finding');
+  await endSessionNow(page);
+  await expect(page.locator('#status')).toHaveText('Session P1 ended.');
+  const study = await savedStudy(page);
+  expect(typeof study.sessions[0].endedAt).toBe('string');
+  expect(study.lastExportedAt).toBeNull();
+});
+
+test('FR2: "End and export backup" ends the session and saves a backup that includes the end (D17, D24)', async ({ page }) => {
   await createStudy(page, 'SAMPLE end');
   await startSession(page);
   await logNote(page, 'One finding');
   await page.getByRole('button', { name: 'End session' }).click();
-  await expect(page.locator('#status')).toHaveText('Session P1 ended.');
-  const exportButton = page.getByRole('button', { name: 'Export backup now' });
-  await expect(exportButton).toBeFocused();
-  const study = await savedStudy(page);
-  expect(typeof study.sessions[0].endedAt).toBe('string');
-
   const downloadPromise = page.waitForEvent('download');
-  await exportButton.press('Enter');
+  await page.getByRole('dialog').getByRole('button', { name: 'End and export backup' }).click();
   const download = await downloadPromise;
   expect(download.suggestedFilename()).toBe('SAMPLE-end-round-1.study.json');
-  await expect(page.locator('.backup-offer')).toContainText('Backup saved as SAMPLE-end-round-1.study.json');
-  expect(typeof (await savedStudy(page)).lastExportedAt).toBe('string');
+  const file = JSON.parse(await (await download.createReadStream()).toArray().then((c) => Buffer.concat(c).toString('utf8')));
+  expect(typeof file.study.sessions[0].endedAt).toBe('string');
+  expect(file.study.findings).toHaveLength(1);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.locator('#status'))
+    .toHaveText('Session P1 ended. Backup saved as SAMPLE-end-round-1.study.json in your Downloads folder.');
+  await expect(page.getByLabel('Participant ID')).toHaveValue('P2');
+  const study = await savedStudy(page);
+  expect(typeof study.sessions[0].endedAt).toBe('string');
+  expect(typeof study.lastExportedAt).toBe('string');
 });
 
 // ---------- FR3: live logging ----------
