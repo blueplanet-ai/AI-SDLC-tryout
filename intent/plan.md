@@ -318,3 +318,4 @@ of `intent/spec.md`; where they differ from the spec text, this list wins.
 | D20 | Speed check | No tight timing test in CI. Manual "feels instant" check, plus a generous 1-second robot limit. |
 | D21 | README (was O1) | Keep the original intro, goals and other sections; add a section called "The app: test-session notes" after Goals. |
 | D22 | Work style (was O2) | One pull request per plan step. Each pull request must show a passing check before it is merged. |
+| D23 | Deleting a study (added in step 4, 2026-09-24) | A study can be deleted from the Studies list. A confirmation dialog explains that deleted data cannot be recovered and offers "Export a backup first" in the same dialog. Deleting is blocked while one of the study's sessions is running. Delete is permanent (no undo, as D16). Because the backup needs it, **exporting a study to a `.study.json` file moves forward from step 9 to step 4**; import stays in step 9. |

@@ -35,6 +35,12 @@ export function createRepo(store) {
     store.save(STUDY_PREFIX + study.id, study);
   }
 
+  // Permanent (D23): the screen asks for confirmation first.
+  function deleteStudy(id) {
+    store.remove(STUDY_PREFIX + id);
+    if (currentStudyId() === id) setCurrentStudyId(null);
+  }
+
   function currentStudyId() {
     try {
       const id = store.load(CURRENT_KEY);
@@ -57,5 +63,7 @@ export function createRepo(store) {
     else store.save(CURRENT_KEY, id);
   }
 
-  return { listStudies, loadStudy, saveStudy, currentStudyId, currentStudy, setCurrentStudyId };
+  return {
+    listStudies, loadStudy, saveStudy, deleteStudy, currentStudyId, currentStudy, setCurrentStudyId,
+  };
 }

@@ -180,3 +180,84 @@ test('FR7: a damaged saved study shows a warning and the others still work', asy
   await expect(page.locator('.warning')).toContainText('1 saved study could not be read');
   await expect(page.locator('.studies-table tbody tr')).toHaveCount(1);
 });
+
+// ---------- D23: delete study ----------
+
+async function openDeleteDialog(page, name) {
+  await page.getByRole('link', { name: 'Studies', exact: true }).click();
+  await page.getByRole('button', { name: `Delete ${name}, round 1` }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  return dialog;
+}
+
+test('FR1: deleting a study asks for confirmation; Cancel keeps it (D23)', async ({ page }) => {
+  await createStudy(page, 'SAMPLE keep');
+  await addScreens(page, ['Home']);
+  const dialog = await openDeleteDialog(page, 'SAMPLE keep');
+  await expect(dialog).toContainText('Delete "SAMPLE keep" (round 1)?');
+  await expect(dialog).toContainText('Deleted data cannot be recovered.');
+  await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeFocused();
+  await dialog.getByRole('button', { name: 'Cancel' }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Delete SAMPLE keep, round 1' })).toBeFocused();
+  // Escape also cancels.
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator('.studies-table tbody tr')).toHaveCount(1);
+});
+
+test('FR1: confirming delete removes the study permanently (D23)', async ({ page }) => {
+  await createStudy(page, 'SAMPLE other');
+  await createStudy(page, 'SAMPLE gone');
+  const dialog = await openDeleteDialog(page, 'SAMPLE gone');
+  await dialog.getByRole('button', { name: 'Delete study' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.locator('#status')).toHaveText('Study "SAMPLE gone" (round 1) deleted.');
+  await page.reload();
+  await expect(page.locator('.studies-table tbody tr')).toHaveCount(1);
+  await expect(page.locator('.studies-table')).not.toContainText('SAMPLE gone');
+  // It was the open study, so Setup now has nothing open.
+  await page.goto('/app/#/setup');
+  await expect(page.getByRole('link', { name: 'Go to Studies' })).toBeVisible();
+});
+
+test('FR1: the delete dialog offers "Export a backup first" (D23)', async ({ page }) => {
+  await createStudy(page, 'SAMPLE backup');
+  await addScreens(page, ['Home', 'Menu']);
+  const dialog = await openDeleteDialog(page, 'SAMPLE backup');
+  const downloadPromise = page.waitForEvent('download');
+  await dialog.getByRole('button', { name: 'Export a backup first' }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe('SAMPLE-backup-round-1.study.json');
+  const file = JSON.parse(await (await download.createReadStream()).toArray().then((c) => Buffer.concat(c).toString('utf8')));
+  expect(file.schemaVersion).toBe(1);
+  expect(file.study.name).toBe('SAMPLE backup');
+  expect(file.study.screens.map((s) => s.name)).toEqual(['Home', 'Menu']);
+  await expect(dialog).toContainText('Backup saved as SAMPLE-backup-round-1.study.json');
+  // The dialog stays open so the note-taker can still decide.
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: 'Cancel' }).click();
+  await expect(page.locator('.studies-table tbody tr')).toHaveCount(1);
+});
+
+test('FR1: a study with a running session cannot be deleted (D23)', async ({ page }) => {
+  await createStudy(page, 'SAMPLE running');
+  // Sessions are started in step 5; here one is put in storage directly.
+  await page.evaluate(() => {
+    const key = Object.keys(localStorage).find((k) => k.startsWith('tsn:study:'));
+    const saved = JSON.parse(localStorage.getItem(key));
+    saved.data.sessions.push({ id: 's1', participantId: 'P1', startedAt: new Date().toISOString(), endedAt: null });
+    localStorage.setItem(key, JSON.stringify(saved));
+  });
+  await page.getByRole('link', { name: 'Studies', exact: true }).click();
+  await page.getByRole('button', { name: 'Delete SAMPLE running, round 1' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByRole('alert').filter({ hasText: 'End the running session' }))
+    .toHaveText('End the running session before deleting this study.');
+  await page.reload();
+  await expect(page.locator('.studies-table tbody tr')).toHaveCount(1);
+});

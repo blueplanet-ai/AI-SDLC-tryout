@@ -1,9 +1,15 @@
-// Studies screen: list of studies, create a study, copy a study for the next round.
+// Studies screen: list of studies, create a study, copy a study for the next
+// round, delete a study (with confirmation and a backup offer, D23).
 
 import { el, replaceChildren } from './dom.js';
+import { downloadText } from './download.js';
 import {
-  createStudy, copyStudyForNextRound, PROTOTYPE_TYPES, PROTOTYPE_TYPE_LABELS,
+  createStudy, copyStudyForNextRound, canDeleteStudy, markExported,
+  PROTOTYPE_TYPES, PROTOTYPE_TYPE_LABELS,
 } from '../model.js';
+import { toExportText, exportFileName } from '../backup.js';
+
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 export function render(container, ctx) {
   const { repo } = ctx;
@@ -47,6 +53,61 @@ export function render(container, ctx) {
     });
   }
 
+  // D23: confirm in a dialog that also offers a backup; blocked while a session runs.
+  function askDelete(study, button) {
+    listError.textContent = '';
+    const allowed = canDeleteStudy(study);
+    if (!allowed.ok) {
+      listError.textContent = allowed.message;
+      return;
+    }
+    const backupStatus = el('p', { class: 'status', role: 'status', 'aria-live': 'polite' });
+    const dialogError = el('p', { class: 'error', role: 'alert' });
+
+    function exportBackup() {
+      ctx.run(dialogError, () => {
+        const exported = markExported(study);
+        repo.saveStudy(exported);
+        const fileName = exportFileName(exported);
+        downloadText(fileName, toExportText(exported, exported.lastExportedAt));
+        backupStatus.textContent = `Backup saved as ${fileName} in your Downloads folder.`;
+      });
+    }
+
+    function confirmDelete() {
+      ctx.run(dialogError, () => {
+        repo.deleteStudy(study.id);
+        dialog.close();
+        ctx.announce(`Study "${study.name}" (round ${study.round}) deleted.`);
+        render(container, ctx);
+        container.querySelector('#new-study-name')?.focus();
+      });
+    }
+
+    const cancel = el('button', { type: 'button', autofocus: true, onclick: () => dialog.close() }, 'Cancel');
+    const dialog = el('dialog', { class: 'confirm', 'aria-labelledby': 'delete-title', 'aria-describedby': 'delete-desc' },
+      el('h2', { id: 'delete-title' }, `Delete "${study.name}" (round ${study.round})?`),
+      el('p', { id: 'delete-desc' },
+        `This deletes the study with its ${plural(study.screens.length, 'screen')}, `
+        + `${plural(study.sessions.length, 'session')}, ${plural(study.findings.length, 'finding')} `
+        + `and ${plural(study.feedback.length, 'feedback response')}. `,
+        el('strong', {}, 'Deleted data cannot be recovered.')),
+      el('div', { class: 'actions' },
+        el('button', { type: 'button', onclick: exportBackup }, 'Export a backup first'),
+        el('button', { type: 'button', class: 'danger', onclick: confirmDelete }, 'Delete study'),
+        cancel),
+      backupStatus,
+      dialogError);
+    // After closing, remove the dialog and put focus back where it was.
+    dialog.addEventListener('close', () => {
+      dialog.remove();
+      if (button.isConnected) button.focus();
+    });
+    document.body.append(dialog);
+    dialog.showModal();
+    cancel.focus();
+  }
+
   const listError = el('p', { class: 'error', role: 'alert' });
   const currentId = repo.currentStudyId();
 
@@ -70,7 +131,11 @@ export function render(container, ctx) {
           el('button', {
             type: 'button', onclick: () => copyForNextRound(study),
             'aria-label': `Copy ${study.name}, round ${study.round}, for next round`,
-          }, 'Copy for next round'))))));
+          }, 'Copy for next round'),
+          el('button', {
+            type: 'button', class: 'danger-outline', onclick: (e) => askDelete(study, e.currentTarget),
+            'aria-label': `Delete ${study.name}, round ${study.round}`,
+          }, 'Delete'))))));
 
   replaceChildren(container,
     el('h2', {}, 'Create a study'),

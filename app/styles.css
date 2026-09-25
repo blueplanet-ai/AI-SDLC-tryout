@@ -163,3 +163,20 @@ button.primary:disabled { background: var(--header-bg); color: var(--muted); bor
   border-bottom: 1px solid var(--border);
 }
 .screen-list .inline { margin: 0; }
+
+/* ---------- Delete study (D23) ---------- */
+button.danger { background: var(--error); color: #ffffff; border-color: var(--error); }
+button.danger:hover:not(:disabled) { background: #8c1d18; }
+button.danger-outline { color: var(--error); border-color: var(--error); }
+
+dialog.confirm {
+  max-width: 34rem;
+  padding: 20px 24px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--bg);
+}
+dialog.confirm::backdrop { background: rgb(0 0 0 / 40%); }
+dialog.confirm h2 { margin-top: 0; }
+dialog.confirm .actions { margin-top: 16px; }
