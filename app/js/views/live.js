@@ -20,8 +20,6 @@ const SHORTCUT_SCREENS = 9;
 // What the note-taker picked; survives re-drawing the screen, not a reload
 // (after a reload it comes back from the saved draft).
 let ui = { sessionId: null, screenId: null, type: 'pain', editingId: null };
-// Set right after "End session", to offer a backup (D17).
-let justEnded = null;
 // The key handler of the session on screen; null when there is none.
 let onShortcut = null;
 
@@ -98,7 +96,6 @@ function renderStart(container, ctx, study, studies) {
       repo.saveStudy(next);
       repo.setCurrentStudyId(next.id);
       repo.clearDraft();
-      justEnded = null;
       ui = { sessionId, screenId: next.screens[0].id, type: 'pain', editingId: null };
       const session = next.sessions.find((s) => s.id === sessionId);
       ctx.announce(`Session ${session.participantId} started.`);
@@ -106,28 +103,8 @@ function renderStart(container, ctx, study, studies) {
     });
   }
 
-  // D17: right after "End session", offer a backup of the study.
-  let backup = null;
-  if (justEnded && justEnded.studyId === study.id) {
-    const backupStatus = el('p', { class: 'status', role: 'status' });
-    const backupError = el('p', { class: 'error', role: 'alert' });
-    backup = el('div', { class: 'backup-offer' },
-      el('p', {}, `Session ${justEnded.participantId} ended. `,
-        'Browser storage can be lost, so keep a backup file of this study.'),
-      el('button', {
-        type: 'button', id: 'export-backup',
-        onclick: () => ctx.run(backupError, () => {
-          const fileName = exportStudy(repo, study);
-          backupStatus.textContent = `Backup saved as ${fileName} in your Downloads folder.`;
-        }),
-      }, 'Export backup now'),
-      backupStatus,
-      backupError);
-  }
-
   replaceChildren(container,
     el('p', { class: 'context' }, `${study.name} · Round ${study.round}`),
-    backup,
     el('h2', {}, 'Start a session'),
     allowed.ok ? null : el('p', { id: 'start-blocked', class: 'warning' }, allowed.message, ' ',
       study.screens.length === 0 ? el('a', { href: '#/setup' }, 'Go to Study setup') : null),
@@ -140,7 +117,7 @@ function renderStart(container, ctx, study, studies) {
       el('div', {}, el('button', { type: 'submit', class: 'primary', disabled: !allowed.ok }, 'Start session')),
       error));
 
-  return backup ? backup.querySelector('#export-backup') : input;
+  return input;
 }
 
 // ---------- Session running: log findings (FR3) ----------
@@ -160,7 +137,6 @@ function renderSession(container, ctx, study, session) {
   }
   if (!findScreen(study, ui.screenId)) ui.screenId = study.screens[0]?.id ?? null;
 
-  const barError = el('p', { class: 'error', role: 'alert' });
   const screenError = el('p', { id: 'screen-error', class: 'error', role: 'alert' });
   const noteError = el('p', { id: 'note-error', class: 'error', role: 'alert' });
 
@@ -171,22 +147,54 @@ function renderSession(container, ctx, study, session) {
     timer.textContent = formatDuration(Date.now() - Date.parse(session.startedAt));
   }, 1000);
 
-  function onEndSession() {
-    ctx.run(barError, () => {
-      repo.saveStudy(endSession(study, session.id));
-      repo.clearDraft();
-      justEnded = { studyId: study.id, participantId: session.participantId };
-      ui = { sessionId: null, screenId: null, type: 'pain', editingId: null };
-      ctx.announce(`Session ${session.participantId} ended.`);
-      render(container, ctx, { focus: '#export-backup' });
+  // D13 + D17 + D24: one dialog confirms the end and offers a backup at the same time.
+  function askEndSession(event) {
+    const opener = event.currentTarget;
+    const dialogError = el('p', { class: 'error', role: 'alert' });
+    let ended = false;
+
+    function end(withBackup) {
+      ctx.run(dialogError, () => {
+        const next = endSession(study, session.id);
+        // The backup is made after ending, so the file includes the end time.
+        const fileName = withBackup ? exportStudy(repo, next) : null;
+        if (!withBackup) repo.saveStudy(next);
+        repo.clearDraft();
+        ended = true;
+        ui = { sessionId: null, screenId: null, type: 'pain', editingId: null };
+        dialog.close();
+        render(container, ctx, { focus: '#participant' });
+        ctx.announce(fileName
+          ? `Session ${session.participantId} ended. Backup saved as ${fileName} in your Downloads folder.`
+          : `Session ${session.participantId} ended.`);
+      });
+    }
+
+    const cancel = el('button', { type: 'button', onclick: () => dialog.close() }, 'Cancel');
+    const dialog = el('dialog', { class: 'confirm', 'aria-labelledby': 'end-title', 'aria-describedby': 'end-desc' },
+      el('h2', { id: 'end-title' }, `End session for ${session.participantId}?`),
+      el('p', { id: 'end-desc' }, 'An ended session cannot be continued. '
+        + 'Browser storage can be lost, so keep a backup file of this study.'),
+      el('div', { class: 'actions' },
+        el('button', { type: 'button', class: 'primary', onclick: () => end(true) }, 'End and export backup'),
+        el('button', { type: 'button', onclick: () => end(false) }, 'End'),
+        cancel),
+      dialogError);
+    // Cancel or Escape: remove the dialog and go back to the End session button.
+    dialog.addEventListener('close', () => {
+      dialog.remove();
+      if (!ended && opener.isConnected) opener.focus();
     });
+    document.body.append(dialog);
+    dialog.showModal();
+    cancel.focus();
   }
 
   const bar = el('div', { class: 'live-bar' },
     el('p', {}, el('strong', {}, study.name), ` · Round ${study.round}`),
     el('p', {}, 'Participant ', el('strong', { id: 'current-participant' }, session.participantId)),
     el('p', {}, 'Session time ', timer),
-    el('button', { type: 'button', id: 'end-session', onclick: onEndSession }, 'End session'));
+    el('button', { type: 'button', id: 'end-session', onclick: askEndSession }, 'End session'));
 
   // ----- Note box (made early: the pickers save the draft from it) -----
   const noteBox = el('textarea', {
@@ -286,7 +294,7 @@ function renderSession(container, ctx, study, session) {
 
   // ----- Shortcuts anywhere on this screen -----
   onShortcut = (event) => {
-    if (!noteBox.isConnected || container.closest('[hidden]')) return;
+    if (!noteBox.isConnected || container.closest('[hidden]') || document.querySelector('dialog[open]')) return;
     const shortcut = shortcutFor(event);
     if (!shortcut || shortcut.action === 'save') return; // Enter is handled by each box
     event.preventDefault();
@@ -313,7 +321,6 @@ function renderSession(container, ctx, study, session) {
 
   replaceChildren(container,
     bar,
-    barError,
     el('div', { class: 'live-pickers' },
       el('div', { role: 'group', 'aria-labelledby': 'screens-label' },
         el('p', { id: 'screens-label', class: 'picker-label' }, 'Screen ', el('span', { class: 'hint' }, '(Alt+1…9)')),
