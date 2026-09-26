@@ -56,7 +56,9 @@ because of its 7-day rule.
 ```bash
 python3 -m http.server 8000 --directory app
 ```
-Then open http://localhost:8000. See [CLAUDE.md](CLAUDE.md) for tests.
+Then open http://localhost:8000. See [CLAUDE.md](CLAUDE.md) for tests, and
+[docs/manual-test-checklist.md](docs/manual-test-checklist.md) for the checks
+to do by hand.
 
 **Seeing the latest version when testing locally:** the app keeps a copy of
 itself for offline use. Locally it always loads the newest files while the
