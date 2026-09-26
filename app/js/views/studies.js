@@ -124,7 +124,7 @@ export function render(container, ctx) {
         el('td', {}, String(study.sessions.length)),
         el('td', {}, String(study.findings.length)),
         // FR8 / D27: each round's feedback count, so rounds can be compared.
-        el('td', { class: 'feedback-cell' }, `Feedback: ${feedbackStatus(study).text}`),
+        el('td', { class: 'feedback-cell' }, feedbackStatus(study).text),
         el('td', { class: 'actions' },
           el('button', { type: 'button', onclick: () => open(study), 'aria-label': `Open ${study.name}, round ${study.round}` }, 'Open'),
           el('button', {

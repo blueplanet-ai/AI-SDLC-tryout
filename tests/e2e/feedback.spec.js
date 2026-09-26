@@ -153,8 +153,9 @@ test('FR8: the Studies list shows each round\'s feedback count against the targe
 
   await page.goto('/app/#/studies');
   await expect(page.getByRole('columnheader', { name: 'Feedback' })).toBeVisible();
-  await expect(studyRow(page, 1)).toContainText('Feedback: 2 of 2 — target met');
-  await expect(studyRow(page, 2)).toContainText('Feedback: 1 of 2 — below target');
+  // Under the "Feedback" heading, without repeating the word (D27, 2026-09-25).
+  await expect(studyRow(page, 1).locator('td.feedback-cell')).toHaveText('2 of 2 — target met');
+  await expect(studyRow(page, 2).locator('td.feedback-cell')).toHaveText('1 of 2 — below target');
 });
 
 test('FR8: the feedback panel works with the keyboard only', async ({ page }) => {
