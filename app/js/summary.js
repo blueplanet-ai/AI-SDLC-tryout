@@ -109,12 +109,12 @@ export function toMarkdown(study) {
   return lines.join('\n');
 }
 
-// D26: "<study name> - summary - <YYYY-MM-DD>.md", dated the day it is downloaded.
+// D26: "<study name> - round <N> - summary - <YYYY-MM-DD>.md", dated the day it is downloaded.
 // Characters that file systems refuse (/ \ : * ? " < > |) become "-".
 export function summaryFileName(study, today = new Date()) {
   const name = study.name
     .replace(/[\\/:*?"<>|\u0000-\u001f]+/g, '-')
     .replace(/\s+/g, ' ')
     .trim() || 'study';
-  return `${name} - summary - ${localDate(today)}.md`;
+  return `${name} - round ${study.round} - summary - ${localDate(today)}.md`;
 }

@@ -194,15 +194,16 @@ test('FR5: notes show the participant ID only, no time', () => {
   assertEqual(/\d{1,2}:\d{2}/.test(markdown), false);
 });
 
-test('FR6: the download file name is "<study name> - summary - <date>.md" (D26)', () => {
+test('FR6: the download file name is "<study name> - round <N> - summary - <date>.md" (D26)', () => {
   const study = sampleStudy();
-  assertEqual(summaryFileName(study, new Date(2026, 8, 25, 9, 30)), 'SAMPLE checkout test - summary - 2026-09-25.md');
+  assertEqual(summaryFileName(study, new Date(2026, 8, 25, 9, 30)),
+    'SAMPLE checkout test - round 2 - summary - 2026-09-25.md');
 });
 
 test('FR6: characters that file systems refuse are replaced in the file name', () => {
   const env = sampleEnv();
   const study = createStudy({ name: 'SAMPLE a/b: "v2"?', prototypeType: 'figma' }, env);
-  assertEqual(summaryFileName(study, new Date(2026, 0, 5)), 'SAMPLE a-b- -v2- - summary - 2026-01-05.md');
+  assertEqual(summaryFileName(study, new Date(2026, 0, 5)), 'SAMPLE a-b- -v2- - round 1 - summary - 2026-01-05.md');
   const korean = createStudy({ name: '한국어 테스트', prototypeType: 'figma' }, env);
-  assertEqual(summaryFileName(korean, new Date(2026, 0, 5)), '한국어 테스트 - summary - 2026-01-05.md');
+  assertEqual(summaryFileName(korean, new Date(2026, 0, 5)), '한국어 테스트 - round 1 - summary - 2026-01-05.md');
 });

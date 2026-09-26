@@ -141,9 +141,9 @@ test('FR6: copied text and downloaded file are identical to the summary shown', 
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   });
-  expect(file.suggestedFilename()).toBe(`SAMPLE summary study - summary - ${today}.md`);
+  expect(file.suggestedFilename()).toBe(`SAMPLE summary study - round 1 - summary - ${today}.md`);
   const downloaded = await (await file.createReadStream()).toArray().then((c) => Buffer.concat(c).toString('utf8'));
-  await expect(page.locator('#status')).toHaveText(`Summary saved as "SAMPLE summary study - summary - ${today}.md".`);
+  await expect(page.locator('#status')).toHaveText(`Summary saved as "SAMPLE summary study - round 1 - summary - ${today}.md".`);
 
   expect(copied).toBe(downloaded);
   expect(downloaded).toBe(shown);
