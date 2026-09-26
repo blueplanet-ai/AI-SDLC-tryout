@@ -78,8 +78,6 @@ main {
 
 h1:focus { outline: none; }
 
-.placeholder { color: var(--muted); }
-
 /* ---------- Shared pieces (step 4) ---------- */
 :root {
   --error: #b3261e;
@@ -269,3 +267,28 @@ textarea {
 .findings-table tr.editing select { min-width: 8rem; }
 .findings-table tr.editing .hint { margin: 4px 0 0; font-size: 0.9rem; }
 #findings-count:focus { outline: none; }
+
+/* ---------- Summary (step 7) ---------- */
+.name-check {
+  max-width: 48rem;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--header-bg);
+}
+.name-check p { margin: 0 0 8px; }
+.name-check .check { margin: 0; display: flex; gap: 8px; align-items: center; font-weight: 600; }
+.name-check input[type="checkbox"] { width: 1.2rem; height: 1.2rem; margin: 0; }
+.summary-text {
+  max-width: 48rem;
+  max-height: 60vh;
+  overflow: auto;
+  padding: 12px 16px;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.95rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
