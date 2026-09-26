@@ -117,3 +117,41 @@ test('FR3: the draft is not listed as a study', () => {
   repo.saveDraft({ sessionId: 's1', note: 'x', screenId: 'scr', type: 'pain' });
   assertEqual(repo.listStudies(), { studies: [], damaged: [] });
 });
+
+// ---------- FR7 / D28: time of the last change ----------
+
+function clockedRepo() {
+  const backend = createMemoryBackend();
+  let now = '2026-09-25T09:00:00.000Z';
+  const repo = createRepo(createStore(backend), { newId: () => 'x', now: () => now });
+  return { repo, setNow: (value) => { now = value; } };
+}
+
+test('FR7: saving a changed study records changedAt; saving it unchanged does not (D28)', () => {
+  const { repo, setNow } = clockedRepo();
+  const s = study('a', '2026-09-24T10:00:00.000Z');
+  repo.saveStudy(s);
+  assertEqual(repo.loadStudy('a').changedAt, '2026-09-24T10:00:00.000Z', 'new study keeps its own:');
+  setNow('2026-09-25T10:00:00.000Z');
+  repo.saveStudy(repo.loadStudy('a'));
+  assertEqual(repo.loadStudy('a').changedAt, '2026-09-24T10:00:00.000Z', 'unchanged:');
+  repo.saveStudy(addScreen(repo.loadStudy('a'), 'Home', { newId: () => 'scr', now: () => '' }));
+  assertEqual(repo.loadStudy('a').changedAt, '2026-09-25T10:00:00.000Z', 'changed:');
+});
+
+test('FR7: saving only a new export time does not count as a change (D28)', () => {
+  const { repo, setNow } = clockedRepo();
+  repo.saveStudy(study('a', '2026-09-24T10:00:00.000Z'));
+  setNow('2026-09-25T11:00:00.000Z');
+  repo.saveStudy({ ...repo.loadStudy('a'), lastExportedAt: '2026-09-25T11:00:00.000Z' });
+  assertEqual(repo.loadStudy('a').changedAt, '2026-09-24T10:00:00.000Z');
+});
+
+test('FR7: a study restored from a backup is saved exactly as in the file (D7, D28)', () => {
+  const { repo, setNow } = clockedRepo();
+  repo.saveStudy(study('a', '2026-09-24T10:00:00.000Z', 'SAMPLE in browser'));
+  setNow('2026-09-25T12:00:00.000Z');
+  const fromFile = { ...study('a', '2026-09-24T10:00:00.000Z', 'SAMPLE from file'), lastExportedAt: '2026-09-24T11:00:00.000Z' };
+  repo.restoreStudy(fromFile);
+  assertEqual(repo.loadStudy('a'), fromFile);
+});

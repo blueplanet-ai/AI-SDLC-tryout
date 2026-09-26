@@ -2,6 +2,7 @@
 // Start session button (only enabled once the study has a screen).
 
 import { el, replaceChildren } from './dom.js';
+import { backupHeader } from './backup-status.js';
 import {
   updateStudyDetails, addScreen, renameScreen, moveScreen, removeScreen,
   canStartSession, activeSession, PROTOTYPE_TYPES, PROTOTYPE_TYPE_LABELS,
@@ -130,6 +131,7 @@ export function render(container, ctx, { focus } = {}) {
 
   replaceChildren(container,
     el('p', { class: 'context' }, `Round ${study.round}`),
+    backupHeader(study, ctx),
 
     el('h2', {}, 'Details'),
     el('form', { class: 'stack', onsubmit: onSaveDetails, novalidate: true },

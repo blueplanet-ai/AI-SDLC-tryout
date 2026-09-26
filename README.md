@@ -37,7 +37,9 @@ test sessions, then produce a summary grouped by screen for the team.
 ### Keep your data safe
 Notes are saved in the browser. Clearing browser data, switching browsers, or
 (in Safari) not opening the app for 7 days can erase them. Use **Export study**
-after each session and keep the file somewhere safe. Supported browsers:
+after each session and keep the file somewhere safe; "Last exported" turns
+amber when the study has changed since. To restore a study or move it to
+another laptop, use **Import a study** on the Studies screen. Supported browsers:
 current Chrome, Edge, and Firefox. Safari works, but only with regular exports
 because of its 7-day rule.
 

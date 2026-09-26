@@ -4,6 +4,7 @@
 // (D27): delete it and add it again. Only the date and the text are stored.
 
 import { el, replaceChildren } from './dom.js';
+import { refreshBackupStatusLine } from './backup-status.js';
 import {
   addFeedback, deleteFeedback, feedbackNewestFirst, feedbackStatus, localDate,
 } from '../model.js';
@@ -21,7 +22,11 @@ export function renderFeedbackPanel(panel, ctx, studyId, { focus } = {}) {
   }
   if (!study) return;
 
-  const redraw = (focusAfter) => renderFeedbackPanel(panel, ctx, studyId, { focus: focusAfter });
+  // A change to the feedback also changes the backup indicator at the top (D28).
+  const redraw = (focusAfter) => {
+    renderFeedbackPanel(panel, ctx, studyId, { focus: focusAfter });
+    refreshBackupStatusLine(repo.loadStudy(studyId));
+  };
   const status = feedbackStatus(study);
   const today = localDate(new Date());
 

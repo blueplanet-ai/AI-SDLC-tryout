@@ -309,3 +309,21 @@ textarea {
 .feedback-form .field p { margin: 0; }
 .feedback-form button, .feedback-form input[type="date"] { align-self: flex-start; }
 .studies-table .feedback-cell { white-space: nowrap; }
+
+/* ---------- Export / import (step 9) ---------- */
+.backup-status { color: var(--muted); margin: 0 0 8px; }
+/* D28: amber when the study changed after its last export. */
+.backup-status.warn {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+span.backup-status { display: inline-block; margin: 0; }
+/* D28: the indicator with a small "Export now" button beside it. */
+.backup-header { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 0 0 8px; }
+.backup-header .backup-status, .backup-header .error { margin: 0; }
+button.small { padding: 2px 8px; font-size: 0.9rem; }
+.live-bar .backup-header { margin: 0; }
+input[type="file"] { font: inherit; }
