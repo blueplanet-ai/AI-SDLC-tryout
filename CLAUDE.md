@@ -29,6 +29,8 @@ sentence, and flag unclear requirements instead of deciding silently.
   not only in the UI.
 - Copy and Download summary must both use `summary.js` → `toMarkdown()`.
 - Keep the Content-Security-Policy meta tag in `app/index.html` strict.
+- Change files only with the file-edit tools, so every change is visible to
+  the owner. Never change files through Python or other scripts.
 - Never commit real study data. Test data must be labelled SAMPLE.
   Exports are named `*.study.json` and are git-ignored.
 

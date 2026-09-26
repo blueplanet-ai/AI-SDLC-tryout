@@ -43,6 +43,9 @@ words, and explain any technical choice in one sentence.
   Name each test after the requirement it proves, e.g. "FR3: ...".
 - If what you build differs from `intent/plan.md`, update `plan.md` in the
   same pull request and say so in the pull request description.
+- Any choice the spec and plan don't cover counts as a difference, even if
+  you didn't need to ask: list it in the PR and record it as the next
+  D-number in plan.md §8.
 
 ## 4. Open the pull request
 
