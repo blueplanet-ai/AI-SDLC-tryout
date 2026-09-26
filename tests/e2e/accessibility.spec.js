@@ -89,6 +89,21 @@ async function closeDialog(page) {
   await expect(page.getByRole('dialog')).toHaveCount(0);
 }
 
+// Proves the scan really looks: two problems are planted in the page on purpose.
+test('Accessibility (spec 5): the scan reports problems when there are some (self-check)', async ({ page }) => {
+  await page.evaluate(() => {
+    const main = document.getElementById('main');
+    const pale = document.createElement('p');
+    pale.textContent = 'SAMPLE pale text';
+    pale.style.color = '#cccccc';
+    const unlabelled = document.createElement('input');
+    unlabelled.type = 'text';
+    main.append(pale, unlabelled);
+  });
+  await scan(page, 'Studies with planted problems');
+  expect(problems.map((p) => p.rule).sort()).toEqual(['color-contrast', 'label']);
+});
+
 test('Accessibility (spec 5): every screen without a study passes the WCAG 2.1 AA scan', async ({ page }) => {
   await scan(page, 'Studies, no studies yet');
   for (const screen of ['Study setup', 'Live log', 'Review', 'Summary']) {
