@@ -98,7 +98,7 @@ h2 { margin: 32px 0 12px; font-size: 1.2rem; }
   white-space: nowrap;
 }
 
-input[type="text"], select {
+input[type="text"], input[type="date"], select {
   font: inherit;
   padding: 6px 8px;
   border: 1px solid #767676;
@@ -292,3 +292,20 @@ textarea {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+/* ---------- Feedback received (step 8) ---------- */
+.feedback-panel { max-width: 48rem; margin-top: 32px; }
+.feedback-status {
+  display: inline-block;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin: 0 0 8px;
+}
+.feedback-status:focus { outline: none; }
+.feedback-status.below { background: var(--warning-bg); color: var(--warning-text); }
+.feedback-status.met { background: #e6f4ea; color: var(--ok); }
+.feedback-form { margin: 16px 0 24px; align-items: stretch; }
+.feedback-form .field p { margin: 0; }
+.feedback-form button, .feedback-form input[type="date"] { align-self: flex-start; }
+.studies-table .feedback-cell { white-space: nowrap; }

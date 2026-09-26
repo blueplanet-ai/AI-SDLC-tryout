@@ -3,9 +3,11 @@
 // C2 / D26: Copy and Download stay disabled until the note-taker ticks
 // "I checked for names and personal details". The tick is not remembered,
 // so every visit to this screen asks again.
+// Below the summary sits the Feedback received panel (FR8, views/feedback.js).
 
 import { el, replaceChildren } from './dom.js';
 import { downloadText } from './download.js';
+import { renderFeedbackPanel } from './feedback.js';
 import { toMarkdown, summaryFileName } from '../summary.js';
 
 export function render(container, ctx) {
@@ -60,6 +62,9 @@ export function render(container, ctx) {
     },
   });
 
+  // FR8: logging feedback redraws only this panel, so the name-check tick is kept.
+  const feedbackPanel = el('section', { class: 'feedback-panel', 'aria-labelledby': 'feedback-title' });
+
   replaceChildren(container,
     el('p', { class: 'context' }, `${study.name} · Round ${study.round}`),
     el('div', { class: 'name-check' },
@@ -74,5 +79,7 @@ export function render(container, ctx) {
     // Shown as plain text, exactly as it will be copied; tabindex lets keyboard users scroll it.
     el('pre', {
       id: 'summary-text', class: 'summary-text', tabindex: 0, 'aria-labelledby': 'summary-preview-title',
-    }, text));
+    }, text),
+    feedbackPanel);
+  renderFeedbackPanel(feedbackPanel, ctx, study.id);
 }

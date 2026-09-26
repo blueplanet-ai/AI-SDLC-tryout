@@ -342,21 +342,36 @@ export function markExported(study, env = defaultEnv) {
 
 // ---------- FR8: feedback received ----------
 
-// A real calendar date written as YYYY-MM-DD (so 2026-02-30 is refused).
-function checkDate(value) {
+// A date as YYYY-MM-DD in the laptop's own time zone.
+export function localDate(value) {
+  const date = new Date(value);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+// A real calendar date written as YYYY-MM-DD (so 2026-02-30 is refused),
+// and not later than `today` (D27).
+function checkDate(value, today) {
   const date = typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
     ? new Date(`${value}T00:00:00Z`) : null;
   const ok = date !== null && !Number.isNaN(date.getTime()) && date.toISOString().startsWith(value);
   if (!ok) throw new ModelError('Enter the date the feedback was received.', 'bad-date');
+  if (value > today) throw new ModelError('The date received cannot be in the future.', 'future-date');
   return value;
 }
 
 // Stores only the date and the text — never who sent it.
+// D27: feedback cannot be edited; delete it and add it again.
 export function addFeedback(study, { receivedOn, text }, env = defaultEnv) {
-  const item = { id: env.newId(), receivedOn: checkDate(receivedOn), text: cleanText(text, 'Feedback') };
+  const item = {
+    id: env.newId(),
+    receivedOn: checkDate(receivedOn, localDate(env.now())),
+    text: cleanText(text, 'Feedback'),
+  };
   return { ...study, feedback: [...study.feedback, item] };
 }
 
+// D16: permanent; the screen asks for confirmation first.
 export function deleteFeedback(study, feedbackId) {
   if (!study.feedback.some((f) => f.id === feedbackId)) {
     throw new ModelError('That feedback no longer exists.', 'no-feedback');
@@ -364,9 +379,20 @@ export function deleteFeedback(study, feedbackId) {
   return { ...study, feedback: study.feedback.filter((f) => f.id !== feedbackId) };
 }
 
+// Newest date received first; on the same date, the one logged last comes first.
+export function feedbackNewestFirst(study) {
+  return study.feedback
+    .map((item, index) => ({ item, index }))
+    .sort((a, b) => (a.item.receivedOn < b.item.receivedOn ? 1
+      : a.item.receivedOn > b.item.receivedOn ? -1 : b.index - a.index))
+    .map(({ item }) => item);
+}
+
 // D11: the count is always worked out from the logged feedback, never stored.
+// D27: the target is fixed at 2; `text` is the wording shown, e.g. "1 of 2 — below target".
 export function feedbackStatus(study) {
   const count = study.feedback.length;
   const met = count >= FEEDBACK_TARGET;
-  return { count, target: FEEDBACK_TARGET, met, label: met ? 'target met' : 'below target' };
+  const label = met ? 'target met' : 'below target';
+  return { count, target: FEEDBACK_TARGET, met, label, text: `${count} of ${FEEDBACK_TARGET} — ${label}` };
 }
