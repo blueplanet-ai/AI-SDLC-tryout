@@ -1,10 +1,11 @@
 // Studies screen: list of studies, create a study, copy a study for the next
-// round, delete a study (with confirmation and a backup offer, D23).
+// round, delete a study (with confirmation and a backup offer, D23). Each row
+// shows the round's feedback count against the target (FR8, D27).
 
 import { el, replaceChildren } from './dom.js';
 import { exportStudy } from './export.js';
 import {
-  createStudy, copyStudyForNextRound, canDeleteStudy, findActiveSession,
+  createStudy, copyStudyForNextRound, canDeleteStudy, findActiveSession, feedbackStatus,
   PROTOTYPE_TYPES, PROTOTYPE_TYPE_LABELS,
 } from '../model.js';
 
@@ -112,7 +113,7 @@ export function render(container, ctx) {
     : el('table', { class: 'studies-table' },
       el('caption', { class: 'visually-hidden' }, 'Your studies'),
       el('thead', {}, el('tr', {},
-        ['Study', 'Round', 'Prototype', 'Screens', 'Sessions', 'Findings', 'Actions']
+        ['Study', 'Round', 'Prototype', 'Screens', 'Sessions', 'Findings', 'Feedback', 'Actions']
           .map((h) => el('th', { scope: 'col' }, h)))),
       el('tbody', {}, studies.map((study) => el('tr', { 'data-study-id': study.id },
         el('th', { scope: 'row' }, study.name,
@@ -122,6 +123,8 @@ export function render(container, ctx) {
         el('td', {}, String(study.screens.length)),
         el('td', {}, String(study.sessions.length)),
         el('td', {}, String(study.findings.length)),
+        // FR8 / D27: each round's feedback count, so rounds can be compared.
+        el('td', { class: 'feedback-cell' }, `Feedback: ${feedbackStatus(study).text}`),
         el('td', { class: 'actions' },
           el('button', { type: 'button', onclick: () => open(study), 'aria-label': `Open ${study.name}, round ${study.round}` }, 'Open'),
           el('button', {

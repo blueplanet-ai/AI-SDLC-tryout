@@ -5,18 +5,11 @@
 // The Markdown uses only headings and bullet lists (D8), so it also reads
 // cleanly when pasted into an email as plain text.
 
-import { PROTOTYPE_TYPE_LABELS, participantOfFinding } from './model.js';
+import { PROTOTYPE_TYPE_LABELS, participantOfFinding, localDate } from './model.js';
 
 // D26: word for word, decided by the product owner.
 export const FEEDBACK_REQUEST =
   'Reply to this message with one thing that was useful and one thing you\'ll act on.';
-
-// A date as YYYY-MM-DD in the laptop's own time zone.
-export function localDate(value) {
-  const date = new Date(value);
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-}
 
 const byTime = (a, b) => (a.time < b.time ? -1 : a.time > b.time ? 1 : 0);
 

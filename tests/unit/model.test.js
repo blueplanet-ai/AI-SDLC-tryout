@@ -438,29 +438,67 @@ test('FR7: records when the study was last exported', () => {
 
 // ---------- FR8: feedback received ----------
 
-test('FR8: 0 responses shows "below target"', () => {
-  assertEqual(m.feedbackStatus(sampleStudy(testEnv())), { count: 0, target: 2, met: false, label: 'below target' });
+// The test clock says 2026-09-24, so that is "today" for these tests.
+
+test('FR8: 0 responses shows "0 of 2 — below target" (D27)', () => {
+  assertEqual(m.feedbackStatus(sampleStudy(testEnv())),
+    { count: 0, target: 2, met: false, label: 'below target', text: '0 of 2 — below target' });
 });
 
-test('FR8: after 1 response the round shows "below target"', () => {
+test('FR8: after 1 response the round shows "1 of 2 — below target"', () => {
   const env = testEnv();
   const study = m.addFeedback(sampleStudy(env), { receivedOn: '2026-09-24', text: 'SAMPLE useful' }, env);
-  assertEqual(m.feedbackStatus(study), { count: 1, target: 2, met: false, label: 'below target' });
+  assertEqual(m.feedbackStatus(study),
+    { count: 1, target: 2, met: false, label: 'below target', text: '1 of 2 — below target' });
 });
 
-test('FR8: after a 2nd response the round shows "target met"', () => {
+test('FR8: after a 2nd response the round shows "2 of 2 — target met"', () => {
   const env = testEnv();
   let study = sampleStudy(env);
-  study = m.addFeedback(study, { receivedOn: '2026-09-24', text: 'SAMPLE one' }, env);
-  study = m.addFeedback(study, { receivedOn: '2026-09-25', text: 'SAMPLE two' }, env);
-  assertEqual(m.feedbackStatus(study), { count: 2, target: 2, met: true, label: 'target met' });
+  study = m.addFeedback(study, { receivedOn: '2026-09-23', text: 'SAMPLE one' }, env);
+  study = m.addFeedback(study, { receivedOn: '2026-09-24', text: 'SAMPLE two' }, env);
+  assertEqual(m.feedbackStatus(study),
+    { count: 2, target: 2, met: true, label: 'target met', text: '2 of 2 — target met' });
+});
+
+test('FR8: more than 2 responses still shows "target met" (D27)', () => {
+  const env = testEnv();
+  let study = sampleStudy(env);
+  for (const text of ['SAMPLE one', 'SAMPLE two', 'SAMPLE three']) {
+    study = m.addFeedback(study, { receivedOn: '2026-09-24', text }, env);
+  }
+  assertEqual(m.feedbackStatus(study).text, '3 of 2 — target met');
+});
+
+test('FR8: a feedback date can be today or earlier, but not in the future (D27)', () => {
+  const env = testEnv();
+  let study = sampleStudy(env);
+  study = m.addFeedback(study, { receivedOn: '2026-09-24', text: 'SAMPLE today' }, env);
+  study = m.addFeedback(study, { receivedOn: '2025-12-31', text: 'SAMPLE last year' }, env);
+  assertEqual(study.feedback.length, 2);
+  const err = assertModelError(
+    () => m.addFeedback(study, { receivedOn: '2026-09-26', text: 'SAMPLE' }, env), 'future-date');
+  assertEqual(err.message, 'The date received cannot be in the future.');
+});
+
+test('FR8: feedback is listed newest date first; same date, last logged first', () => {
+  const env = testEnv();
+  let study = sampleStudy(env);
+  study = m.addFeedback(study, { receivedOn: '2026-09-20', text: 'SAMPLE a' }, env);
+  study = m.addFeedback(study, { receivedOn: '2026-09-22', text: 'SAMPLE b' }, env);
+  study = m.addFeedback(study, { receivedOn: '2026-09-20', text: 'SAMPLE c' }, env);
+  assertEqual(m.feedbackNewestFirst(study).map((f) => f.text), ['SAMPLE b', 'SAMPLE c', 'SAMPLE a']);
+});
+
+test('FR8: deleting feedback that no longer exists is refused', () => {
+  assertModelError(() => m.deleteFeedback(sampleStudy(testEnv()), 'missing'), 'no-feedback');
 });
 
 test('FR8: the count follows the logged feedback, also after a delete (D11)', () => {
   const env = testEnv();
   let study = sampleStudy(env);
-  study = m.addFeedback(study, { receivedOn: '2026-09-24', text: 'SAMPLE one' }, env);
-  study = m.addFeedback(study, { receivedOn: '2026-09-25', text: 'SAMPLE two' }, env);
+  study = m.addFeedback(study, { receivedOn: '2026-09-23', text: 'SAMPLE one' }, env);
+  study = m.addFeedback(study, { receivedOn: '2026-09-24', text: 'SAMPLE two' }, env);
   study = m.deleteFeedback(study, study.feedback[0].id);
   assertEqual(m.feedbackStatus(study).label, 'below target');
   assertEqual('feedbackCount' in study, false, 'no stored count:');
