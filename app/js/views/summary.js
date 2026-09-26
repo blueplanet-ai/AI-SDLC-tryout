@@ -6,6 +6,7 @@
 // Below the summary sits the Feedback received panel (FR8, views/feedback.js).
 
 import { el, replaceChildren } from './dom.js';
+import { backupStatusLine } from './backup-status.js';
 import { downloadText } from './download.js';
 import { renderFeedbackPanel } from './feedback.js';
 import { toMarkdown, summaryFileName } from '../summary.js';
@@ -67,6 +68,7 @@ export function render(container, ctx) {
 
   replaceChildren(container,
     el('p', { class: 'context' }, `${study.name} · Round ${study.round}`),
+    backupStatusLine(study),
     el('div', { class: 'name-check' },
       el('p', { id: 'names-help' },
         'Before sharing, read the summary below for names or personal details. ',

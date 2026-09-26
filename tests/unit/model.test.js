@@ -436,6 +436,76 @@ test('FR7: records when the study was last exported', () => {
   assertEqual(typeof study.lastExportedAt, 'string');
 });
 
+test('FR7: a new study starts with changedAt equal to createdAt (D28)', () => {
+  const study = sampleStudy(testEnv(), []);
+  assertEqual(study.changedAt, study.createdAt);
+});
+
+test('FR7: recordChange sets changedAt when anything in the study changed (D28)', () => {
+  const env = testEnv();
+  const before = sampleStudy(env);
+  const fixed = { newId: env.newId, now: () => '2026-09-25T09:00:00.000Z' };
+  const changes = {
+    screens: m.addScreen(before, 'Checkout', env),
+    name: m.updateStudyDetails(before, { name: 'SAMPLE renamed' }),
+    sessions: m.startSession(before, 'P1', env).study,
+  };
+  for (const [what, after] of Object.entries(changes)) {
+    assertEqual(m.recordChange(before, after, fixed).changedAt, '2026-09-25T09:00:00.000Z', `${what}:`);
+  }
+  let withSession = changes.sessions;
+  const findingAdded = m.addFinding(withSession, { screenId: before.screens[0].id, type: 'pain', note: 'SAMPLE' }, env).study;
+  assertEqual(m.recordChange(withSession, findingAdded, fixed).changedAt, '2026-09-25T09:00:00.000Z', 'findings:');
+  withSession = m.addFeedback(withSession, { receivedOn: '2026-09-24', text: 'SAMPLE' }, env);
+  assertEqual(m.recordChange(changes.sessions, withSession, fixed).changedAt, '2026-09-25T09:00:00.000Z', 'feedback:');
+});
+
+test('FR7: an export alone, or saving without a change, keeps changedAt (D28)', () => {
+  const env = testEnv();
+  const before = sampleStudy(env);
+  const fixed = { newId: env.newId, now: () => '2026-09-25T09:00:00.000Z' };
+  assertEqual(m.recordChange(before, m.markExported(before, env), fixed).changedAt, before.changedAt);
+  assertEqual(m.recordChange(before, { ...before }, fixed).changedAt, before.changedAt);
+  assertEqual(m.recordChange(undefined, before, fixed).changedAt, before.changedAt, 'new study:');
+});
+
+test('FR7: "how long ago" wording (D28)', () => {
+  const now = '2026-09-25T12:00:00.000Z';
+  const cases = [
+    ['2026-09-25T11:59:30.000Z', 'just now'],
+    ['2026-09-25T12:00:10.000Z', 'just now'], // laptop clock moved back
+    ['2026-09-25T11:59:00.000Z', '1 minute ago'],
+    ['2026-09-25T11:15:00.000Z', '45 minutes ago'],
+    ['2026-09-25T11:00:00.000Z', '1 hour ago'],
+    ['2026-09-24T12:00:01.000Z', '23 hours ago'],
+    ['2026-09-24T12:00:00.000Z', '1 day ago'],
+    ['2026-09-22T09:00:00.000Z', '3 days ago'],
+  ];
+  for (const [then, expected] of cases) assertEqual(m.timeAgo(then, now), expected, then);
+});
+
+test('FR7: a study never exported shows "Not backed up yet", amber once it has findings (D28)', () => {
+  const env = testEnv();
+  const study = withSession(env);
+  assertEqual(m.backupStatus(study), { warn: false, text: 'Not backed up yet' });
+  const withFinding = m.addFinding(study, { screenId: study.screens[0].id, type: 'pain', note: 'SAMPLE' }, env).study;
+  assertEqual(m.backupStatus(withFinding), { warn: true, text: 'Not backed up yet' });
+});
+
+test('FR7: "Last exported" turns amber when anything changed after the export (D28)', () => {
+  const study = {
+    ...sampleStudy(testEnv()),
+    changedAt: '2026-09-22T09:00:00.000Z',
+    lastExportedAt: '2026-09-22T09:00:00.000Z',
+  };
+  const now = '2026-09-25T12:00:00.000Z';
+  assertEqual(m.backupStatus(study, now), { warn: false, text: 'Last exported: 3 days ago' });
+  assertEqual(m.backupStatus({ ...study, changedAt: '2026-09-23T09:00:00.000Z' }, now),
+    { warn: true, text: 'Last exported: 3 days ago — changed since' });
+  // Saved before D28, so it is unknown whether it changed: amber, to be safe.
+  assertEqual(m.backupStatus({ ...study, changedAt: undefined }, now).warn, true, 'no changedAt:');
+});
+
 // ---------- FR8: feedback received ----------
 
 // The test clock says 2026-09-24, so that is "today" for these tests.
@@ -533,7 +603,7 @@ test('FR2: a full study stores only the allowed fields (no names or contact deta
   study = m.addFeedback(study, { receivedOn: '2026-09-24', text: 'SAMPLE' }, env);
   study = m.markExported(study, env);
   const allowed = {
-    study: ['createdAt', 'feedback', 'findings', 'id', 'lastExportedAt', 'name', 'prototypeType', 'round', 'screens', 'sessions'],
+    study: ['changedAt', 'createdAt', 'feedback', 'findings', 'id', 'lastExportedAt', 'name', 'prototypeType', 'round', 'screens', 'sessions'],
     screen: ['id', 'name'],
     session: ['endedAt', 'id', 'participantId', 'startedAt'],
     finding: ['id', 'note', 'screenId', 'sessionId', 'time', 'type'],

@@ -309,3 +309,17 @@ textarea {
 .feedback-form .field p { margin: 0; }
 .feedback-form button, .feedback-form input[type="date"] { align-self: flex-start; }
 .studies-table .feedback-cell { white-space: nowrap; }
+
+/* ---------- Export / import (step 9) ---------- */
+.backup-status { color: var(--muted); margin: 0 0 8px; }
+/* D28: amber when the study changed after its last export. */
+.backup-status.warn {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+span.backup-status { display: inline-block; margin: 0; }
+.live-bar .backup-status { margin: 0; }
+input[type="file"] { font: inherit; }

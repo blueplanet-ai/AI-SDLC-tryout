@@ -3,12 +3,14 @@
 // One key per study means a damaged entry cannot take the other studies with it.
 
 import { StoreError } from './store.js';
+import { recordChange, defaultEnv } from './model.js';
 
 const STUDY_PREFIX = 'study:';
 const CURRENT_KEY = 'currentStudyId';
 const DRAFT_KEY = 'draft';
 
-export function createRepo(store) {
+// `env` supplies the clock for `changedAt`, so tests can use a fixed time.
+export function createRepo(store, env = defaultEnv) {
   // Returns { studies, damaged }: studies newest first, and the keys that could not be read.
   function listStudies() {
     const studies = [];
@@ -32,7 +34,20 @@ export function createRepo(store) {
     return store.load(STUDY_PREFIX + id);
   }
 
+  // D28: notes the time when anything in the study changed.
   function saveStudy(study) {
+    let previous;
+    try {
+      previous = loadStudy(study.id);
+    } catch (err) {
+      if (!(err instanceof StoreError)) throw err;
+    }
+    store.save(STUDY_PREFIX + study.id, recordChange(previous, study, env));
+  }
+
+  // Saves a study from a backup file exactly as it is (FR7 import), so it
+  // does not count as changed since that backup.
+  function restoreStudy(study) {
     store.save(STUDY_PREFIX + study.id, study);
   }
 
@@ -85,7 +100,7 @@ export function createRepo(store) {
   }
 
   return {
-    listStudies, loadStudy, saveStudy, deleteStudy, currentStudyId, currentStudy, setCurrentStudyId,
+    listStudies, loadStudy, saveStudy, restoreStudy, deleteStudy, currentStudyId, currentStudy, setCurrentStudyId,
     loadDraft, saveDraft, clearDraft,
   };
 }

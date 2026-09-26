@@ -5,13 +5,15 @@
 //
 // Study shape (the only fields that may be stored — see the privacy test):
 // {
-//   id, name, prototypeType, round, createdAt, lastExportedAt,
+//   id, name, prototypeType, round, createdAt, changedAt, lastExportedAt,
 //   screens:  [{ id, name }],
 //   sessions: [{ id, participantId, startedAt, endedAt }],
 //   findings: [{ id, sessionId, screenId, type, note, time }],
 //   feedback: [{ id, receivedOn, text }],
 // }
 // Findings point to screens by id, so renaming a screen updates every finding.
+// `changedAt` is when anything in the study last changed (D28); the storage
+// code fills it in with recordChange() on every save.
 
 export const PROTOTYPE_TYPES = ['figma', 'in-vehicle', 'other'];
 export const PROTOTYPE_TYPE_LABELS = {
@@ -76,12 +78,14 @@ function sameName(a, b) {
 // ---------- FR1: study and screens ----------
 
 export function createStudy({ name, prototypeType }, env = defaultEnv) {
+  const now = env.now();
   return {
     id: env.newId(),
     name: cleanName(name, 'Study name'),
     prototypeType: checkPrototypeType(prototypeType),
     round: 1,
-    createdAt: env.now(),
+    createdAt: now,
+    changedAt: now,
     lastExportedAt: null,
     screens: [],
     sessions: [],
@@ -334,10 +338,49 @@ export function filterFindings(study, { participantId, screenId, type } = {}) {
     && (!type || f.type === type));
 }
 
-// ---------- FR7: export time ----------
+// ---------- FR7: export time and the "Last exported" indicator ----------
 
 export function markExported(study, env = defaultEnv) {
   return { ...study, lastExportedAt: env.now() };
+}
+
+// Everything in the study except the two bookkeeping times.
+function contentOf(study) {
+  return JSON.stringify({ ...study, changedAt: undefined, lastExportedAt: undefined });
+}
+
+// D28: `next` is about to replace `previous` (undefined for a new study).
+// If anything in it changed — findings, feedback, screens, sessions, name —
+// `changedAt` becomes now. An export alone is not a change.
+export function recordChange(previous, next, env = defaultEnv) {
+  if (!previous) return next.changedAt ? next : { ...next, changedAt: env.now() };
+  if (contentOf(previous) === contentOf(next)) return { ...next, changedAt: previous.changedAt };
+  return { ...next, changedAt: env.now() };
+}
+
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+// "just now", "5 minutes ago", "3 hours ago", "2 days ago".
+export function timeAgo(then, now = defaultEnv.now()) {
+  const minutes = Math.floor((Date.parse(now) - Date.parse(then)) / 60000);
+  if (!(minutes >= 1)) return 'just now';
+  if (minutes < 60) return `${plural(minutes, 'minute')} ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${plural(hours, 'hour')} ago`;
+  return `${plural(Math.floor(hours / 24), 'day')} ago`;
+}
+
+// FR7 / D28: what the backup indicator says, and whether it is amber (`warn`).
+// Amber when anything changed after the last export, or when a study that was
+// never exported has findings. A study saved before D28 has no `changedAt`;
+// it counts as changed, to be safe.
+export function backupStatus(study, now = defaultEnv.now()) {
+  if (!study.lastExportedAt) {
+    return { warn: study.findings.length > 0, text: 'Not backed up yet' };
+  }
+  const changed = !study.changedAt || study.changedAt > study.lastExportedAt;
+  const text = `Last exported: ${timeAgo(study.lastExportedAt, now)}`;
+  return { warn: changed, text: changed ? `${text} — changed since` : text };
 }
 
 // ---------- FR8: feedback received ----------

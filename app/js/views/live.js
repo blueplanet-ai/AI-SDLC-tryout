@@ -6,6 +6,7 @@
 
 import { el, replaceChildren } from './dom.js';
 import { exportStudy } from './export.js';
+import { backupStatusLine } from './backup-status.js';
 import { shortcutFor } from '../keyboard.js';
 import {
   findActiveSession, canStartSession, startSession, endSession, suggestNextParticipantId,
@@ -105,6 +106,7 @@ function renderStart(container, ctx, study, studies) {
 
   replaceChildren(container,
     el('p', { class: 'context' }, `${study.name} · Round ${study.round}`),
+    backupStatusLine(study),
     el('h2', {}, 'Start a session'),
     allowed.ok ? null : el('p', { id: 'start-blocked', class: 'warning' }, allowed.message, ' ',
       study.screens.length === 0 ? el('a', { href: '#/setup' }, 'Go to Study setup') : null),
@@ -155,10 +157,9 @@ function renderSession(container, ctx, study, session) {
 
     function end(withBackup) {
       ctx.run(dialogError, () => {
-        const next = endSession(study, session.id);
+        repo.saveStudy(endSession(study, session.id));
         // The backup is made after ending, so the file includes the end time.
-        const fileName = withBackup ? exportStudy(repo, next) : null;
-        if (!withBackup) repo.saveStudy(next);
+        const fileName = withBackup ? exportStudy(repo, study.id) : null;
         repo.clearDraft();
         ended = true;
         ui = { sessionId: null, screenId: null, type: 'pain', editingId: null };
@@ -194,6 +195,7 @@ function renderSession(container, ctx, study, session) {
     el('p', {}, el('strong', {}, study.name), ` · Round ${study.round}`),
     el('p', {}, 'Participant ', el('strong', { id: 'current-participant' }, session.participantId)),
     el('p', {}, 'Session time ', timer),
+    backupStatusLine(study),
     el('button', { type: 'button', id: 'end-session', onclick: askEndSession }, 'End session'));
 
   // ----- Note box (made early: the pickers save the draft from it) -----

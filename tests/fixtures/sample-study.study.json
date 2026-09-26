@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "exportedAt": "2026-09-24T15:00:00.000Z",
+  "study": {
+    "id": "sample-study-0001",
+    "name": "SAMPLE — not real data: checkout test",
+    "prototypeType": "figma",
+    "round": 1,
+    "createdAt": "2026-09-24T09:00:00.000Z",
+    "changedAt": "2026-09-24T14:30:00.000Z",
+    "lastExportedAt": "2026-09-24T15:00:00.000Z",
+    "screens": [
+      { "id": "scr-home", "name": "Home" },
+      { "id": "scr-cart", "name": "Cart" },
+      { "id": "scr-pay", "name": "Payment" }
+    ],
+    "sessions": [
+      { "id": "ses-1", "participantId": "P1", "startedAt": "2026-09-24T10:00:00.000Z", "endedAt": "2026-09-24T10:30:00.000Z" },
+      { "id": "ses-2", "participantId": "P2", "startedAt": "2026-09-24T14:00:00.000Z", "endedAt": "2026-09-24T14:30:00.000Z" }
+    ],
+    "findings": [
+      { "id": "f-1", "sessionId": "ses-1", "screenId": "scr-home", "type": "positive", "note": "SAMPLE found the search right away", "time": "2026-09-24T10:02:00.000Z" },
+      { "id": "f-2", "sessionId": "ses-1", "screenId": "scr-cart", "type": "pain", "note": "SAMPLE could not find the remove button", "time": "2026-09-24T10:10:00.000Z" },
+      { "id": "f-3", "sessionId": "ses-2", "screenId": "scr-cart", "type": "pain", "note": "SAMPLE expected the total to include shipping", "time": "2026-09-24T14:08:00.000Z" },
+      { "id": "f-4", "sessionId": "ses-2", "screenId": "scr-pay", "type": "pain", "note": "SAMPLE card field rejected spaces\nand gave no hint", "time": "2026-09-24T14:20:00.000Z" }
+    ],
+    "feedback": [
+      { "id": "fb-1", "receivedOn": "2026-09-24", "text": "SAMPLE the cart section was the most useful part." }
+    ]
+  }
+}
