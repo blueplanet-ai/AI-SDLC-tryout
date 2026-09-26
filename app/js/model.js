@@ -349,13 +349,18 @@ function contentOf(study) {
   return JSON.stringify({ ...study, changedAt: undefined, lastExportedAt: undefined });
 }
 
+const later = (a, b) => (!a ? b : !b ? a : a > b ? a : b);
+
 // D28: `next` is about to replace `previous` (undefined for a new study).
 // If anything in it changed — findings, feedback, screens, sessions, name —
 // `changedAt` becomes now. An export alone is not a change.
+// The later export time is kept: a screen may still hold the study from before
+// "Export now", and its next save must not wipe out that export.
 export function recordChange(previous, next, env = defaultEnv) {
   if (!previous) return next.changedAt ? next : { ...next, changedAt: env.now() };
-  if (contentOf(previous) === contentOf(next)) return { ...next, changedAt: previous.changedAt };
-  return { ...next, changedAt: env.now() };
+  const lastExportedAt = later(previous.lastExportedAt, next.lastExportedAt) ?? null;
+  const changedAt = contentOf(previous) === contentOf(next) ? previous.changedAt : env.now();
+  return { ...next, changedAt, lastExportedAt };
 }
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;

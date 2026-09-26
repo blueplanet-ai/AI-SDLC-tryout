@@ -4,7 +4,7 @@
 // The rules come from model.js.
 
 import { el, replaceChildren } from './dom.js';
-import { backupStatusLine } from './backup-status.js';
+import { backupHeader } from './backup-status.js';
 import { shortcutFor } from '../keyboard.js';
 import {
   filterFindings, editFinding, deleteFinding, participantOfFinding, participantIds,
@@ -192,7 +192,7 @@ export function render(container, ctx, { focus } = {}) {
 
   replaceChildren(container,
     el('p', { class: 'context' }, `${study.name} · Round ${study.round}`),
-    backupStatusLine(study),
+    backupHeader(study, ctx),
     total === 0 ? null : filters,
     el('p', { id: 'findings-count', tabindex: -1 },
       filtered ? `Showing ${shown.length} of ${plural(total, 'finding')}.` : `${plural(total, 'finding')}.`),

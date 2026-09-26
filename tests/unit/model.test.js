@@ -469,6 +469,17 @@ test('FR7: an export alone, or saving without a change, keeps changedAt (D28)', 
   assertEqual(m.recordChange(undefined, before, fixed).changedAt, before.changedAt, 'new study:');
 });
 
+test('FR7: a save from a screen opened before "Export now" keeps the export time (D28)', () => {
+  const env = testEnv();
+  const before = sampleStudy(env);
+  const exported = { ...before, lastExportedAt: '2026-09-25T08:00:00.000Z' };
+  const fixed = { newId: env.newId, now: () => '2026-09-25T09:00:00.000Z' };
+  // The screen still holds `before` (no export time) and adds a screen to it.
+  const saved = m.recordChange(exported, m.addScreen(before, 'Checkout', env), fixed);
+  assertEqual([saved.lastExportedAt, saved.changedAt], ['2026-09-25T08:00:00.000Z', '2026-09-25T09:00:00.000Z']);
+  assertEqual(m.backupStatus(saved, '2026-09-25T09:00:00.000Z').warn, true, 'changed since the export:');
+});
+
 test('FR7: "how long ago" wording (D28)', () => {
   const now = '2026-09-25T12:00:00.000Z';
   const cases = [

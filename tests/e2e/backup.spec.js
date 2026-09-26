@@ -212,6 +212,62 @@ test('FR7: "Last exported" says how long ago (D28)', async ({ page }) => {
   await expect(rowBackup(page, 'SAMPLE old export')).toHaveText('Last exported: 3 days ago');
 });
 
+// ---------- "Export now" on the study screens (D28) ----------
+
+test('FR7: "Export now" sits next to the indicator on Setup, Live log, Review and Summary (D28)', async ({ page }) => {
+  await createStudy(page, 'SAMPLE export now');
+  for (const screen of ['Study setup', 'Live log', 'Review', 'Summary']) {
+    await goTo(page, screen);
+    await expect(page.locator('.backup-header #export-now'), screen).toHaveText('Export now');
+  }
+
+  // On Summary the name-check tick is kept: only the indicator is redrawn.
+  await page.getByLabel('I checked for names and personal details').check();
+  await expect(indicator(page)).toHaveText('Not backed up yet');
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export now' }).click();
+  expect((await downloadPromise).suggestedFilename()).toBe('SAMPLE-export-now-round-1.study.json');
+  await expect(indicator(page)).toHaveText('Last exported: just now');
+  await expect(page.locator('#status'))
+    .toHaveText('Backup saved as SAMPLE-export-now-round-1.study.json in your Downloads folder.');
+  await expect(page.getByLabel('I checked for names and personal details')).toBeChecked();
+
+  // A later change on a screen drawn before the export keeps the export time.
+  await goTo(page, 'Study setup');
+  await page.getByRole('button', { name: 'Export now' }).click();
+  await page.getByLabel('New screen name').fill('Checkout');
+  await page.getByLabel('New screen name').press('Enter');
+  await expect(indicator(page)).toHaveText('Last exported: just now — changed since');
+  const [study] = await storedStudies(page);
+  expect(typeof study.lastExportedAt).toBe('string');
+});
+
+test('FR7: on Live log, "Export now" never takes focus from the note box (D28)', async ({ page }) => {
+  const downloads = [];
+  page.on('download', (d) => downloads.push(d.suggestedFilename()));
+  await createStudy(page, 'SAMPLE live export');
+  await startSession(page);
+  await page.keyboard.type('SAMPLE half a note');
+
+  await page.locator('.live-bar').getByRole('button', { name: 'Export now' }).click();
+  await expect.poll(() => downloads.length).toBe(1);
+  await expect(page.locator('#note')).toBeFocused();
+  await expect(page.locator('#note')).toHaveValue('SAMPLE half a note');
+  await expect(indicator(page)).toHaveText('Last exported: just now');
+
+  // Enter saves the note; Alt shortcuts pick screen and type. None of them export.
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.feed-list li')).toHaveCount(1);
+  await page.keyboard.press('Alt+Digit2');
+  await page.keyboard.press('Alt+KeyT');
+  await page.keyboard.press('Alt+KeyS');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#note')).toBeFocused();
+  await logNote(page, 'SAMPLE second note');
+  expect(downloads).toHaveLength(1);
+  await expect(indicator(page)).toHaveText('Last exported: just now — changed since');
+});
+
 // ---------- Import of a study that is already here (D7) ----------
 
 test('FR7: importing a study that is already here asks "Replace existing" or "Keep both" (D7)', async ({ page }) => {

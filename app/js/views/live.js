@@ -6,7 +6,7 @@
 
 import { el, replaceChildren } from './dom.js';
 import { exportStudy } from './export.js';
-import { backupStatusLine } from './backup-status.js';
+import { backupHeader } from './backup-status.js';
 import { shortcutFor } from '../keyboard.js';
 import {
   findActiveSession, canStartSession, startSession, endSession, suggestNextParticipantId,
@@ -106,7 +106,7 @@ function renderStart(container, ctx, study, studies) {
 
   replaceChildren(container,
     el('p', { class: 'context' }, `${study.name} · Round ${study.round}`),
-    backupStatusLine(study),
+    backupHeader(study, ctx),
     el('h2', {}, 'Start a session'),
     allowed.ok ? null : el('p', { id: 'start-blocked', class: 'warning' }, allowed.message, ' ',
       study.screens.length === 0 ? el('a', { href: '#/setup' }, 'Go to Study setup') : null),
@@ -191,14 +191,7 @@ function renderSession(container, ctx, study, session) {
     cancel.focus();
   }
 
-  const bar = el('div', { class: 'live-bar' },
-    el('p', {}, el('strong', {}, study.name), ` · Round ${study.round}`),
-    el('p', {}, 'Participant ', el('strong', { id: 'current-participant' }, session.participantId)),
-    el('p', {}, 'Session time ', timer),
-    backupStatusLine(study),
-    el('button', { type: 'button', id: 'end-session', onclick: askEndSession }, 'End session'));
-
-  // ----- Note box (made early: the pickers save the draft from it) -----
+  // ----- Note box (made early: the pickers and the top bar use it) -----
   const noteBox = el('textarea', {
     id: 'note', rows: 3, value: draft?.note ?? '',
     'aria-describedby': 'current-selection note-help note-reminder note-error',
@@ -210,6 +203,15 @@ function renderSession(container, ctx, study, session) {
       }
     },
   });
+
+  // D28: "Export now" never takes focus from the note box; Enter and the Alt
+  // shortcuts are handled by the note box, so they never press it.
+  const bar = el('div', { class: 'live-bar' },
+    el('p', {}, el('strong', {}, study.name), ` · Round ${study.round}`),
+    el('p', {}, 'Participant ', el('strong', { id: 'current-participant' }, session.participantId)),
+    el('p', {}, 'Session time ', timer),
+    backupHeader(study, ctx, { keepFocusOn: noteBox }),
+    el('button', { type: 'button', id: 'end-session', onclick: askEndSession }, 'End session'));
 
   function saveDraft() {
     try {
