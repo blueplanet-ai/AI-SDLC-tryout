@@ -7,10 +7,11 @@ import { ModelError } from './model.js';
 import * as studiesView from './views/studies.js';
 import * as setupView from './views/setup.js';
 import * as liveView from './views/live.js';
+import * as reviewView from './views/review.js';
 
 const SCREENS = ['studies', 'setup', 'live', 'review', 'summary'];
 const DEFAULT_SCREEN = 'studies';
-const VIEWS = { studies: studiesView, setup: setupView, live: liveView };
+const VIEWS = { studies: studiesView, setup: setupView, live: liveView, review: reviewView };
 
 let keepStatus = false;
 const appError = document.getElementById('app-error');

@@ -321,6 +321,11 @@ export function recentFindings(study, limit = 5) {
   return [...study.findings].reverse().slice(0, limit);
 }
 
+// FR4: the participant IDs of this study, each once, in the order they were first used.
+export function participantIds(study) {
+  return [...new Set(study.sessions.map((s) => s.participantId))];
+}
+
 // FR4: any filter left empty matches everything.
 export function filterFindings(study, { participantId, screenId, type } = {}) {
   return study.findings.filter((f) =>

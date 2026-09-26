@@ -250,3 +250,22 @@ textarea {
 .type-tag { font-weight: 600; padding: 0 6px; border-radius: 4px; }
 .type-tag.pain { color: var(--pain); background: var(--pain-bg); }
 .type-tag.positive { color: var(--positive); background: var(--positive-bg); }
+
+/* ---------- Review (step 6) ---------- */
+.filters { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: flex-end; margin-bottom: 12px; }
+.filters select { min-width: 12rem; }
+
+.findings-table { border-collapse: collapse; width: 100%; }
+.findings-table th, .findings-table td {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.findings-table thead th { color: var(--muted); font-weight: 600; }
+.findings-table td:first-child { white-space: nowrap; }
+.findings-table .note-cell { white-space: pre-wrap; overflow-wrap: anywhere; width: 45%; }
+.findings-table tr.editing td { background: var(--header-bg); }
+.findings-table tr.editing select { min-width: 8rem; }
+.findings-table tr.editing .hint { margin: 4px 0 0; font-size: 0.9rem; }
+#findings-count:focus { outline: none; }

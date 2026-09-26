@@ -421,6 +421,13 @@ test('FR4: no filters shows all findings', () => {
   assertEqual(m.filterFindings(study).length, 4);
 });
 
+test('FR4: participant filter lists each ID once, in first-used order', () => {
+  const env = testEnv();
+  let { study } = reviewStudy();
+  study = m.startSession(study, 'P1', env).study; // D5: reused ID
+  assertEqual(m.participantIds(study), ['P1', 'P2']);
+});
+
 // ---------- FR7: last exported ----------
 
 test('FR7: records when the study was last exported', () => {
