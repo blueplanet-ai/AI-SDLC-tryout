@@ -327,3 +327,20 @@ span.backup-status { display: inline-block; margin: 0; }
 button.small { padding: 2px 8px; font-size: 0.9rem; }
 .live-bar .backup-header { margin: 0; }
 input[type="file"] { font: inherit; }
+
+/* ---------- Offline and new version (step 10, D29) ---------- */
+.update-banner {
+  padding: 4px 24px;
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  border-bottom: 1px solid var(--border);
+}
+.update-banner p { margin: 0; font-weight: 600; }
+.offline-note {
+  margin: 0 0 0 auto;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  font-size: 0.9rem;
+}

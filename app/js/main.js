@@ -5,6 +5,7 @@ import { createStore, StoreError } from './store.js';
 import { createRepo } from './repo.js';
 import { ModelError } from './model.js';
 import { askToKeepData } from './persist.js';
+import { startAppStatus } from './views/app-status.js';
 import * as studiesView from './views/studies.js';
 import * as setupView from './views/setup.js';
 import * as liveView from './views/live.js';
@@ -100,6 +101,9 @@ function onHashChange() {
 
 window.addEventListener('hashchange', onHashChange);
 show(screenFromHash(location.hash), { moveFocus: false });
+
+// Step 10: offline copy, "New version available" banner and offline note.
+startAppStatus();
 
 // C3(d): once there is data, ask the browser to keep it (also when the app
 // reopens straight into another screen).

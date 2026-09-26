@@ -58,6 +58,21 @@ python3 -m http.server 8000 --directory app
 ```
 Then open http://localhost:8000. See [CLAUDE.md](CLAUDE.md) for tests.
 
+**Seeing the latest version when testing locally:** the app keeps a copy of
+itself for offline use. Locally it always loads the newest files while the
+server above is running, so a normal reload is enough. If you ever still see
+an older version, press **Cmd+Shift+R** (Mac) or **Ctrl+Shift+R** (Windows)
+to reload without the saved copy. The "New version available" banner only
+appears on the published site, not locally.
+
+### Offline and updates
+After you have opened the app once, it also opens without internet. While
+the laptop is offline, a note says "Offline — your work is saved on this
+laptop". When a new version is published, a banner says "New version
+available — Reload"; the app switches only when you press Reload, so it
+never interrupts a session. Pressing it during a session is safe: the session
+and your half-typed note come back.
+
 ### Project documents
 - [intent/intent.md](intent/intent.md) — the problem and goal
 - [intent/spec.md](intent/spec.md) — the approved requirements
