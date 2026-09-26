@@ -6,8 +6,7 @@ Static web app for logging prototype test-session notes.
   overrides the spec text where they differ
 - Intent: `intent/intent.md`
 
-The owner is not a programmer: explain every technical choice in one plain
-sentence, and flag unclear requirements instead of deciding silently.
+The owner is not a programmer: explain every technical choice in one plain sentence, and flag unclear requirements instead of deciding silently.
 
 ## Commands
 - Run the app locally: `python3 -m http.server 8000 --directory app` → http://localhost:8000
