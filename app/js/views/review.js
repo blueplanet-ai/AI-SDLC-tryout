@@ -1,6 +1,7 @@
 // Review screen (FR4): all findings of the open study in a table, with
 // filters by participant, screen and type, and edit/delete for each finding.
-// Works during and after a session. The rules come from model.js.
+// Works during and after a session. Newest first, like the Live log feed (D25).
+// The rules come from model.js.
 
 import { el, replaceChildren } from './dom.js';
 import { shortcutFor } from '../keyboard.js';
@@ -69,7 +70,7 @@ export function render(container, ctx, { focus } = {}) {
     }, 'Clear filters'));
 
   // ----- Table -----
-  const shown = filterFindings(study, chosenFilters());
+  const shown = filterFindings(study, chosenFilters()).reverse();
   const total = study.findings.length;
 
   function saveEdit(finding, fields) {

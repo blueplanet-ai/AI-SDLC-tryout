@@ -106,10 +106,20 @@ test('FR4: all findings are listed with participant, screen, type and note', asy
     .toHaveText(['Time', 'Participant', 'Screen', 'Type', 'Note', 'Actions']);
   await expect(row(page, 'SAMPLE toggle unclear').locator('td'))
     .toHaveText([/\d/, 'P2', 'Settings', 'Pain point', 'SAMPLE toggle unclear', 'EditDelete']);
+});
+
+test('FR4: findings are listed newest first (D25)', async ({ page }) => {
+  await sampleData(page);
+  await openReview(page);
   await expect(noteCells(page)).toHaveText([
-    'SAMPLE slow login', 'SAMPLE likes the icons', 'SAMPLE cannot find back',
-    'SAMPLE toggle unclear', 'SAMPLE quick start',
+    'SAMPLE quick start', 'SAMPLE toggle unclear', 'SAMPLE cannot find back',
+    'SAMPLE likes the icons', 'SAMPLE slow login',
   ]);
+  // A finding logged later appears at the top.
+  await runSession(page, [['Menu', 'pain', 'SAMPLE newest one']], { end: false });
+  await openReview(page);
+  await expect(noteCells(page).first()).toHaveText('SAMPLE newest one');
+  await expect(noteCells(page).last()).toHaveText('SAMPLE slow login');
 });
 
 test('FR4: notes are shown as plain text, never run as code', async ({ page }) => {
@@ -127,7 +137,7 @@ test('FR4: filter by participant', async ({ page }) => {
   await openReview(page);
   await expect(page.locator('#filter-participant option')).toHaveText(['All', 'P1', 'P2']);
   await page.getByLabel('Participant', { exact: true }).selectOption('P1');
-  await expect(noteCells(page)).toHaveText(['SAMPLE slow login', 'SAMPLE likes the icons']);
+  await expect(noteCells(page)).toHaveText(['SAMPLE likes the icons', 'SAMPLE slow login']);
   await expect(page.locator('#findings-count')).toHaveText('Showing 2 of 5 findings.');
 });
 
@@ -136,14 +146,14 @@ test('FR4: filter by screen', async ({ page }) => {
   await openReview(page);
   await expect(page.locator('#filter-screen option')).toHaveText(['All', 'Home', 'Menu', 'Settings']);
   await page.getByLabel('Screen', { exact: true }).selectOption({ label: 'Home' });
-  await expect(noteCells(page)).toHaveText(['SAMPLE slow login', 'SAMPLE cannot find back', 'SAMPLE quick start']);
+  await expect(noteCells(page)).toHaveText(['SAMPLE quick start', 'SAMPLE cannot find back', 'SAMPLE slow login']);
 });
 
 test('FR4: filter by type', async ({ page }) => {
   await sampleData(page);
   await openReview(page);
   await page.getByLabel('Type', { exact: true }).selectOption({ label: 'Positive moment' });
-  await expect(noteCells(page)).toHaveText(['SAMPLE likes the icons', 'SAMPLE quick start']);
+  await expect(noteCells(page)).toHaveText(['SAMPLE quick start', 'SAMPLE likes the icons']);
 });
 
 test('FR4: filters combine, and Clear filters shows everything again', async ({ page }) => {
