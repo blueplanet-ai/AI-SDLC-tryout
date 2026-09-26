@@ -15,7 +15,7 @@ The owner is not a programmer: explain every technical choice in one plain sente
 - Build a plan step: /plan-step <number>
 - CI (`.github/workflows/pages.yml`) runs all tests on every pull request
   (no deploy) and on push to `main`, then deploys only `app/` to GitHub Pages
-  if they pass.
+  if they pass, with the commit set as `CACHE_VERSION` in `app/sw.js` (D29).
 - Live site: https://blueplanet-ai.github.io/AI-SDLC-tryout/
 
 ## Hard rules (from the spec)
@@ -47,6 +47,9 @@ The owner is not a programmer: explain every technical choice in one plain sente
 - Delete study (D23): the confirm dialog offers "Export a backup first";
   blocked while one of its sessions is running.
 - No tight timing tests in CI (machines vary); use generous limits (≥1 s).
+- New version (D29): a slim "New version available — Reload" banner; the app
+  never reloads by itself, and Reload is allowed during a session. While
+  offline: "Offline — your work is saved on this laptop".
 
 ## Conventions
 - Rules live in `app/js/model.js`, `summary.js`, `backup.js` (no DOM access)
@@ -67,6 +70,12 @@ The owner is not a programmer: explain every technical choice in one plain sente
 - Enter must not save while an input method is composing (Korean, Japanese,
   Chinese): check `event.isComposing`.
 - Alt+1…9 switches browser tabs on Linux; target is Mac/Windows laptops.
-- Bump `CACHE_VERSION` in `app/sw.js` on every release, or users keep the old app.
+- Never edit `CACHE_VERSION` in `app/sw.js` by hand: the publish workflow
+  sets it to the commit on every release (D29). Locally it stays `'dev'`,
+  and the app then always loads the newest files while the server runs.
+- A new file in `app/` must be added to `FILES` in `app/sw.js`, or it is
+  missing offline (a robot test fails until it is).
+- Saved offline copies are shared with other `*.github.io` pages too: only
+  create or delete caches whose name starts with `tsn-app-`.
 - `localStorage` is shared with other `*.github.io` pages of this account.
 - Safari clears site data after 7 days without a visit — export reminders matter.

@@ -1,5 +1,6 @@
 # Pull request: run all tests and show pass/fail on the pull request (nothing is published).
-# Push to main: run all tests; only if they pass, publish the app/ folder to GitHub Pages.
+# Push to main: run all tests; only if they pass, publish the app/ folder to GitHub Pages,
+# with the commit set as the offline-copy version in app/sw.js (D29).
 name: Test and publish
 
 on:
@@ -58,6 +59,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      # D29: every release gets its own offline-copy version (the commit), so
+      # browsers notice the new app. Stops if the line to replace is missing.
+      - name: Set the app version in the service worker
+        run: |
+          sed -i "s/^const CACHE_VERSION = 'dev';$/const CACHE_VERSION = '${GITHUB_SHA}';/" app/sw.js
+          grep -q "^const CACHE_VERSION = '${GITHUB_SHA}';$" app/sw.js
       - uses: actions/upload-pages-artifact@v3
         with:
           path: app
