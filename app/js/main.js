@@ -8,10 +8,13 @@ import * as studiesView from './views/studies.js';
 import * as setupView from './views/setup.js';
 import * as liveView from './views/live.js';
 import * as reviewView from './views/review.js';
+import * as summaryView from './views/summary.js';
 
 const SCREENS = ['studies', 'setup', 'live', 'review', 'summary'];
 const DEFAULT_SCREEN = 'studies';
-const VIEWS = { studies: studiesView, setup: setupView, live: liveView, review: reviewView };
+const VIEWS = {
+  studies: studiesView, setup: setupView, live: liveView, review: reviewView, summary: summaryView,
+};
 
 let keepStatus = false;
 const appError = document.getElementById('app-error');
