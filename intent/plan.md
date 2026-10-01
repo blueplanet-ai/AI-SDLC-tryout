@@ -297,6 +297,15 @@ field beyond `P<number>`.
 
 ## 8. Clarifications to spec
 
+> **Folded into spec v1.1 (2026-09-30).** D1–D30 are now part of
+> `intent/spec.md` v1.1, tagged "(D1)" to "(D30)"; the "open for owner review"
+> details of D26–D30 were accepted in `docs/acceptance-v1.md` on 2026-09-26.
+> The spec is the source of truth. This section only holds decisions not yet
+> folded in: new decisions (D31 onwards) are recorded here while building, and
+> folded into the spec at acceptance. Until then, where a decision here differs
+> from the spec text, the decision wins. The D1–D30 rows below are kept
+> unchanged as history.
+
 Decided by the product owner (Chuhee) on 2026-09-24. For v1 these count as part
 of `intent/spec.md`; where they differ from the spec text, this list wins.
 
