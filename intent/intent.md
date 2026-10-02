@@ -1,6 +1,6 @@
 # Intent: prototype test-session notes
 
-Author: Chuhee. Status: draft (awaiting originator review).
+Author: Chuhee. Status: Final (v1, shipped as v1.0.0).
 Date: 2026-09-23
 
 ## Problem
@@ -40,6 +40,7 @@ The team actually reads the summary and acts on it. This is measured by having a
 feedback field and actual feedback is received.
 
 ## Open questions
+All five were answered during design — see spec v1.1 §7.
 1. How do we measure "the team reads and acts on it" without accounts or
    analytics? Candidate proxies to decide in Design: number of summary items
    turned into follow-up actions, or a quick "was this useful?" check with

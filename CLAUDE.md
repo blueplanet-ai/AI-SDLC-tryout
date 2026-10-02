@@ -1,9 +1,12 @@
 # CLAUDE.md
 
 Static web app for logging prototype test-session notes.
-- Spec (source of truth): `intent/spec.md`
-- Plan: `intent/plan.md` — section 8 "Clarifications to spec" (D1–D20)
-  overrides the spec text where they differ
+- Spec (source of truth): `intent/spec.md` v1.1 — includes decisions D1–D30,
+  tagged "(D1)" to "(D30)"
+- Plan: `intent/plan.md` — section 8 "Clarifications to spec" holds new
+  decisions (D31 onwards) while building; until they are folded into the spec
+  at acceptance, a decision there wins where it differs from the spec text.
+  Its D1–D30 rows are history.
 - Intent: `intent/intent.md`
 
 The owner is not a programmer: explain every technical choice in one plain sentence, and flag unclear requirements instead of deciding silently.
@@ -33,7 +36,7 @@ The owner is not a programmer: explain every technical choice in one plain sente
 - Never commit real study data. Test data must be labelled SAMPLE.
   Exports are named `*.study.json` and are git-ignored.
 
-## Accepted design decisions (summary of plan section 8)
+## Accepted design decisions (summary of spec v1.1 — the spec wins if they differ)
 - One study = one round; "Copy study for next round" copies name + screens.
 - Feedback count is calculated from logged feedback, never stored separately.
 - Shortcuts: Alt+1…9 pick screen, Alt+S screen search, Alt+T toggle type,
@@ -46,7 +49,6 @@ The owner is not a programmer: explain every technical choice in one plain sente
 - Delete asks for confirmation; no undo in v1.
 - Delete study (D23): the confirm dialog offers "Export a backup first";
   blocked while one of its sessions is running.
-- No tight timing tests in CI (machines vary); use generous limits (≥1 s).
 - New version (D29): a slim "New version available — Reload" banner; the app
   never reloads by itself, and Reload is allowed during a session. While
   offline: "Offline — your work is saved on this laptop".
@@ -59,6 +61,7 @@ The owner is not a programmer: explain every technical choice in one plain sente
 - Insert user text with `textContent`, never `innerHTML`.
 - Storage keys start with `tsn:`; stored data and exports carry `schemaVersion`.
 - Every FR change needs a test whose name starts with the FR (e.g. `FR3: ...`).
+- No tight timing tests in CI (machines vary); use generous limits (≥1 s) (D20).
 - One pull request per plan step (branch `step-N-<name>`); never commit
   directly to `main`. The owner merges once the CI check is green.
 - Relative paths only (the site is served under `/AI-SDLC-tryout/`).
